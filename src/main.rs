@@ -58,10 +58,8 @@ async fn main() {
     }
 
     // set height and width in tiles by 32x32
-    let width = 36.;
-    let height = 26.;
-
-    // derives
+    let width = 500.;
+    let height = 500.;
 
     // load textures
     let tilemap = load_texture("assets/tilemap.png").await.unwrap();
@@ -71,15 +69,15 @@ async fn main() {
     let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
 
     loop {
-        clear_background(BLACK);
+        clear_background(WHITE);
 
         tiled_map.draw_tiles(
             "main layer",
             Rect::new(
                 0.0,
                 0.0,
-                convert_to_absolute(width),
-                convert_to_absolute(height),
+                width,
+                height,
             ),
             None,
         );

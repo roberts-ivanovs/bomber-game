@@ -1,5 +1,4 @@
 { "compressionlevel":-1,
- "height":11,
  "infinite":false,
  "layers":[
         {
@@ -22,22 +21,21 @@
  "tileheight":32,
  "tilesets":[
         {
-          "columns": 10,
+          "columns": 12,
+          "firstgid": 1,
           "image": "tilemap.png",
           "imageheight": 320,
           "imagewidth": 320,
           "margin": 0,
-          "name": "ASD",
           "spacing": 0,
-          "tilecount": 100,
-          "tiledversion": "1.7.0",
+          "name": "tileset",
+          "tilecount": 120,
           "tileheight": 32,
-          "tilewidth": 32,
-          "type": "tileset",
-          "version": "1.6"
+          "tilewidth": 32
         }],
  "tilewidth":32,
  "type":"map",
  "version":1.6,
- "width":11
+ "width":11,
+ "height": 11
 }
