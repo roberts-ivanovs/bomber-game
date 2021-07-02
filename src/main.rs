@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
-use macroquad_tiled as tiled;
 use macroquad_platformer::World as CollisionWorld;
+use macroquad_tiled as tiled;
 
 mod nodes;
 
@@ -19,7 +19,6 @@ struct Resources {
 
 impl Resources {
     async fn new() -> Result<Resources, macroquad::prelude::FileError> {
-
         let bomb = load_texture("assets/items/bomb.png").await?;
         let fire = load_texture("assets/items/fire.png").await?;
         let player = load_texture("assets/items/player.png").await?;
@@ -28,12 +27,7 @@ impl Resources {
         tileset.set_filter(FilterMode::Nearest);
 
         let tiled_map_json = load_string("assets/map.json").await.unwrap();
-        let tiled_map = tiled::load_map(
-            &tiled_map_json,
-            &[("tileset.png", tileset)],
-            &[],
-        )
-        .unwrap();
+        let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
@@ -59,8 +53,36 @@ impl Resources {
 
 #[macroquad::main("Bomber")]
 async fn main() {
+    fn convert_to_absolute(num: f32) -> f32 {
+        return num * 32.;
+    }
+
+    // set height and width in tiles by 32x32
+    let width = 36.;
+    let height = 26.;
+
+    // derives
+
+    // load textures
+    let tilemap = load_texture("assets/tilemap.png").await.unwrap();
+
+    // initialize tilemap
+    let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
+    let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
+
     loop {
         clear_background(BLACK);
+
+        tiled_map.draw_tiles(
+            "main layer",
+            Rect::new(
+                0.0,
+                0.0,
+                convert_to_absolute(width),
+                convert_to_absolute(height),
+            ),
+            None,
+        );
 
         next_frame().await;
     }

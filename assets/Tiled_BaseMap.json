@@ -6,7 +6,7 @@
          "data":[4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 2, 2, 2, 2, 2, 2, 2, 3, 4, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 4, 2, 4, 2, 2, 2, 4, 2, 2, 2, 4, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 4, 2, 2, 2, 4, 2, 2, 2, 4, 2, 4, 4, 2, 4, 2, 4, 2, 4, 2, 4, 2, 4, 4, 3, 2, 2, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
          "height":11,
          "id":1,
-         "name":"Tile Layer 1",
+         "name":"main layer",
          "opacity":1,
          "type":"tilelayer",
          "visible":true,
@@ -22,11 +22,22 @@
  "tileheight":32,
  "tilesets":[
         {
-         "firstgid":1,
-         "source":"Tiled_Tiles.tsx"
+          "columns": 10,
+          "image": "tilemap.png",
+          "imageheight": 320,
+          "imagewidth": 320,
+          "margin": 0,
+          "name": "ASD",
+          "spacing": 0,
+          "tilecount": 100,
+          "tiledversion": "1.7.0",
+          "tileheight": 32,
+          "tilewidth": 32,
+          "type": "tileset",
+          "version": "1.6"
         }],
  "tilewidth":32,
  "type":"map",
- "version":"1.6",
+ "version":1.6,
  "width":11
 }
