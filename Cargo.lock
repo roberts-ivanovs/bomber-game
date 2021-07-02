@@ -114,6 +114,7 @@ dependencies = [
  "macroquad-particles",
  "macroquad-platformer",
  "macroquad-tiled",
+ "nanoserde",
 ]
 
 [[package]]

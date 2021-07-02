@@ -22,9 +22,14 @@ impl Player {
         let mut resources = storage::get_mut::<Resources>();
 
         Self {
-            colider: resources.physics.add_actor(spawner_pos, 30, 30),
+            colider: resources.collision_world.add_actor(spawner_pos, 30, 30),
             pos: spawner_pos,
             speed: vec2(0., 0.),
         }
     }
+}
+
+
+impl scene::Node for Player {
+    // TODO
 }
