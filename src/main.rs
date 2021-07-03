@@ -53,11 +53,7 @@ impl Resources {
 
 #[macroquad::main("Bomber")]
 async fn main() {
-    fn convert_to_absolute(num: f32) -> f32 {
-        return num * 32.;
-    }
-
-    // set height and width in tiles by 32x32
+    // set height and width of tiles by 32x32
     let width = 500.;
     let height = 500.;
 
@@ -66,21 +62,13 @@ async fn main() {
 
     // initialize tilemap
     let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
+    let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
     let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
 
     loop {
         clear_background(WHITE);
 
-        tiled_map.draw_tiles(
-            "main layer",
-            Rect::new(
-                0.0,
-                0.0,
-                width,
-                height,
-            ),
-            None,
-        );
+        tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, width, height), None);
 
         next_frame().await;
     }

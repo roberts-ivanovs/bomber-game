@@ -44,6 +44,7 @@
     "last.exportedFilePath": "/home/ivn/Documents/Rust/bomber/assets",
     "last.externalTilesetPath": "/home/ivn/Documents/Rust/bomber/assets",
     "last.imagePath": "/home/ivn/Documents/Rust/bomber/assets",
+    "lastUsedTilesetExportFilter": "All Files (*)",
     "map.height": 11,
     "map.lastUsedExportFilter": "JSON map files (*.json)",
     "map.lastUsedFormat": "tmx",
