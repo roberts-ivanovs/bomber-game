@@ -1,8 +1,12 @@
 use macroquad::prelude::*;
+use macroquad::prelude::collections::storage;
 use macroquad_platformer::World as CollisionWorld;
 use macroquad_tiled as tiled;
 
+mod gui;
 mod nodes;
+
+use gui::Scene;
 
 use macroquad_platformer::*;
 
@@ -52,32 +56,45 @@ impl Resources {
     }
 }
 
+fn convert_to_absolute(num: f32) -> f32 {
+    return num * consts::TILE_SIZE;
+}
+
 #[macroquad::main("Bomber")]
 async fn main() {
-    fn convert_to_absolute(num: f32) -> f32 {
-        return num * consts::TILE_SIZE;
-    }
-    // set height and width of tiles by 32x32
-    // let width = convert_to_absolute(11.);
-    // let height = convert_to_absolute(11.);
-
-
     // load textures
-    let tilemap = load_texture("assets/tilemap.png").await.unwrap();
+    // let tilemap = load_texture("assets/tilemap.png").await.unwrap();
 
-    // initialize tilemap
-    let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
-    let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
-    let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
+    // // initialize tilemap
+    // let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
+    // let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
+    // let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
 
-    let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
-    let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
+    // let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
+    // let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
 
+    // loop {
+    //     clear_background(WHITE);
+
+    //     tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
+
+    //     next_frame().await;
+    // }
+
+    let gui_resources = gui::GuiResources::new();
+    storage::store(gui_resources);
+
+    //let mut next_scene = gui::matchmaking_lobby().await;
+    let mut next_scene = Scene::MainMenu;
     loop {
-        clear_background(WHITE);
-
-        tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
-
-        next_frame().await;
+        match next_scene {
+            Scene::MainMenu => {
+                next_scene = gui::main_menu().await;
+            }
+            Scene::Credits => {
+                next_scene = gui::credits().await;
+            }
+            Scene::Game => todo!(),
+        }
     }
 }

@@ -1,2 +1,2 @@
-mod player;
 mod bomb;
+mod player;
