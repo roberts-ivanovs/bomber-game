@@ -1,0 +1,65 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "Tiled_BaseMap.tmx",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "/home/ivn/Documents/ASD.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1.5
+        },
+        "/home/ivn/Documents/Rust/untitled.tmx": {
+            "scale": 0.53496875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 785.092587183831,
+                "y": 800.9813657339798
+            }
+        },
+        "Tiled_BaseMap.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 267.3333333333333,
+                "y": 214.33333333333334
+            }
+        },
+        "Tiled_Tiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "map.tmx": {
+            "scale": 2.4316761363636363,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 160.3831999532683,
+                "y": 176.21590046147557
+            }
+        }
+    },
+    "last.exportedFilePath": "/home/ivn/Documents/Rust/bomber/assets",
+    "last.externalTilesetPath": "/home/ivn/Documents/Rust/bomber/assets",
+    "last.imagePath": "/home/ivn/Documents/Rust/bomber/assets",
+    "lastUsedTilesetExportFilter": "All Files (*)",
+    "map.height": 11,
+    "map.lastUsedExportFilter": "JSON map files (*.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.width": 11,
+    "openFiles": [
+        "Tiled_BaseMap.tmx",
+        "Tiled_Tiles.tsx"
+    ],
+    "project": "tiled-sample.tiled-project",
+    "recentFiles": [
+        "Tiled_Tiles.tsx",
+        "Tiled_BaseMap.tmx",
+        "map.tmx",
+        "/home/ivn/Documents/Rust/untitled.tmx",
+        "/home/ivn/Documents/ASD.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx"
+}
