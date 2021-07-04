@@ -8,6 +8,7 @@ use macroquad_platformer::*;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 300.0;
+    pub const TILE_SIZE: f32 = 32.;
 }
 
 struct Resources {
@@ -53,9 +54,13 @@ impl Resources {
 
 #[macroquad::main("Bomber")]
 async fn main() {
+    fn convert_to_absolute(num: f32) -> f32 {
+        return num * consts::TILE_SIZE;
+    }
     // set height and width of tiles by 32x32
-    let width = 500.;
-    let height = 500.;
+    // let width = convert_to_absolute(11.);
+    // let height = convert_to_absolute(11.);
+
 
     // load textures
     let tilemap = load_texture("assets/tilemap.png").await.unwrap();
@@ -65,10 +70,13 @@ async fn main() {
     let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
     let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
 
+    let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
+    let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
+
     loop {
         clear_background(WHITE);
 
-        tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, width, height), None);
+        tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
 
         next_frame().await;
     }
