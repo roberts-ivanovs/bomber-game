@@ -9,8 +9,8 @@ mod mainmenu;
 mod style;
 
 pub use credits::credits;
-pub use style::GuiResources;
 pub use mainmenu::main_menu;
+pub use style::GuiResources;
 
 const WINDOW_WIDTH: f32 = 700.0;
 const WINDOW_HEIGHT: f32 = 300.0;

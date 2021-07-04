@@ -1,3 +1,5 @@
+use std::process;
+
 use macroquad::{
     color::BLACK,
     experimental::collections::storage,
@@ -5,6 +7,7 @@ use macroquad::{
     ui::{root_ui, widgets},
     window::{clear_background, next_frame, screen_width},
 };
+use macroquad::{prelude::*, ui};
 
 use super::{GuiResources, Scene};
 
@@ -44,6 +47,21 @@ pub async fn main_menu() -> Scene {
         {
             root_ui().pop_skin();
             return Scene::Credits;
+        }
+        if widgets::Button::new("       Exit")
+            .size(vec2(button_width, 300.))
+            .position(vec2(
+                screen_width() / 2. + button_width / 2. + 10.,
+                label_pos.y + label_size.y + 50.,
+            ))
+            .ui(&mut *root_ui())
+        {
+            process::exit(0);
+        }
+
+        if is_key_pressed(KeyCode::Escape) {
+            // Exit the game if we press ESCAPE while in mainmenu
+            process::exit(0);
         }
 
         root_ui().pop_skin();

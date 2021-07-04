@@ -4,7 +4,7 @@ use macroquad_platformer::Actor;
 
 use macroquad::experimental::collections::storage;
 
-use crate::{consts, Resources};
+use crate::Resources;
 
 pub struct Player {
     pub colider: Actor,

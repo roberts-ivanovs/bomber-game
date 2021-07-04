@@ -1,5 +1,5 @@
-use macroquad::prelude::*;
 use macroquad::prelude::collections::storage;
+use macroquad::prelude::*;
 use macroquad_platformer::World as CollisionWorld;
 use macroquad_tiled as tiled;
 
@@ -7,13 +7,6 @@ mod gui;
 mod nodes;
 
 use gui::Scene;
-
-use macroquad_platformer::*;
-
-pub mod consts {
-    pub const RUN_SPEED: f32 = 300.0;
-    pub const TILE_SIZE: f32 = 32.;
-}
 
 struct Resources {
     player: Texture2D,
@@ -56,31 +49,16 @@ impl Resources {
     }
 }
 
-fn convert_to_absolute(num: f32) -> f32 {
-    return num * consts::TILE_SIZE;
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Ether Bomber".to_owned(),
+        fullscreen: true,
+        ..Default::default()
+    }
 }
-
-#[macroquad::main("Bomber")]
+#[macroquad::main(window_conf)]
 async fn main() {
     // load textures
-    // let tilemap = load_texture("assets/tilemap.png").await.unwrap();
-
-    // // initialize tilemap
-    // let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
-    // let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
-    // let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
-
-    // let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
-    // let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
-
-    // loop {
-    //     clear_background(WHITE);
-
-    //     tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
-
-    //     next_frame().await;
-    // }
-
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
 
@@ -94,7 +72,9 @@ async fn main() {
             Scene::Credits => {
                 next_scene = gui::credits().await;
             }
-            Scene::Game => todo!(),
+            Scene::Game => {
+                next_scene = nodes::main_game().await;
+            }
         }
     }
 }
