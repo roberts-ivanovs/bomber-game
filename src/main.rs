@@ -17,14 +17,14 @@ struct Resources {
 
 impl Resources {
     async fn new() -> Result<Resources, macroquad::prelude::FileError> {
-        let bomb = load_texture("assets/items/bomb.png").await?;
-        let fire = load_texture("assets/items/fire.png").await?;
-        let player = load_texture("assets/items/player.png").await?;
+        let bomb = load_texture("assets/tiles/bomb.png").await?;
+        let fire = load_texture("assets/tiles/fire.png").await?;
+        let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
 
         let tileset = load_texture("assets/tileset.png").await?;
         tileset.set_filter(FilterMode::Nearest);
 
-        let tiled_map_json = load_string("assets/map.json").await.unwrap();
+        let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
         let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
 
         let mut static_colliders = vec![];
