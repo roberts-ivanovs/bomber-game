@@ -45,7 +45,7 @@ fn parallax(texture: Texture2D, depth: f32, camera_pos: Vec2) -> Rect {
 
 impl scene::Node for LevelBg {
     fn draw(node: RefMut<Self>) {
-        let resources = storage::get_mut::<Resources>();
+        let resources = storage::get::<Resources>();
         let pos = vec2(0., 0.);
 
         draw_texture_ex(

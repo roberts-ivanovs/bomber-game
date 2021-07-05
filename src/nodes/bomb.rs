@@ -53,10 +53,6 @@ impl scene::Node for Bomb {
     }
 
     fn update(mut node: RefMut<Self>) {
-        // let mut resources = storage::get_mut::<Resources>();
-        // let mut player = scene::get_node(node.player);
-        // let mut others = scene::find_nodes_by_type::<Player>();
-
         node.detonation_in_milliseconds -= get_frame_time() * 1000.;
         if node.detonation_in_milliseconds <= 0. {
             // TODO kill all nearby players && host player

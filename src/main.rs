@@ -9,10 +9,12 @@ mod nodes;
 use gui::Scene;
 
 struct ExplosionTextures {
-    middle: Texture2D,
-    tail: Texture2D,
+    deg_90: Texture2D,
+    fourway: Texture2D,
     side: Texture2D,
-    tri_way: Texture2D,
+    tail: Texture2D,
+    threeway: Texture2D,
+    twoway: Texture2D,
 }
 struct Resources {
     player: Texture2D,
@@ -28,11 +30,12 @@ impl Resources {
         let bomb = load_texture("assets/tiles/bomb.png").await?;
         bomb.set_filter(FilterMode::Nearest);
 
-        let fire = load_texture("assets/tiles/fire.png").await?;
-        let expl_middle = load_texture("assets/tiles/explosion/explosion-middle.png").await?;
-        let expl_tail = load_texture("assets/tiles/explosion/explosion-tail.png").await?;
+        let expl_90deg = load_texture("assets/tiles/explosion/explosion-90deg.png").await?;
+        let expl_fourway = load_texture("assets/tiles/explosion/explosion-fourway.png").await?;
         let expl_side = load_texture("assets/tiles/explosion/explosion-side.png").await?;
-        let expl_tri_way = load_texture("assets/tiles/explosion/explosion-middle.png").await?;
+        let expl_tail = load_texture("assets/tiles/explosion/explosion-tail.png").await?;
+        let expl_threeway = load_texture("assets/tiles/explosion/explosion-threeway.png").await?;
+        let expl_twoway = load_texture("assets/tiles/explosion/explosion-twoway.png").await?;
         let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
         player.set_filter(FilterMode::Nearest);
 
@@ -62,10 +65,12 @@ impl Resources {
             bomb,
             player,
             fire: ExplosionTextures {
-                middle: expl_middle,
-                tail: expl_tail,
+                deg_90: expl_90deg,
+                fourway: expl_fourway,
                 side: expl_side,
-                tri_way: expl_tri_way,
+                tail: expl_tail,
+                threeway: expl_threeway,
+                twoway: expl_twoway,
             },
         })
     }
