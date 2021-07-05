@@ -8,17 +8,27 @@ mod nodes;
 
 use gui::Scene;
 
+struct ExplosionTextures {
+    middle: Texture2D,
+    tail: Texture2D,
+    side: Texture2D,
+    tri_way: Texture2D,
+}
 struct Resources {
     player: Texture2D,
     tiled_map: tiled::Map,
     collision_world: CollisionWorld,
     bomb: Texture2D,
+    fire: ExplosionTextures,
 }
 
 impl Resources {
     async fn new() -> Result<Resources, macroquad::prelude::FileError> {
         let bomb = load_texture("assets/tiles/bomb.png").await?;
-        let fire = load_texture("assets/tiles/fire.png").await?;
+        let expl_middle = load_texture("assets/tiles/explosion/explosion-middle.png").await?;
+        let expl_tail = load_texture("assets/tiles/explosion/explosion-tail.png").await?;
+        let expl_side = load_texture("assets/tiles/explosion/explosion-side.png").await?;
+        let expl_tri_way = load_texture("assets/tiles/explosion/explosion-middle.png").await?;
         let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
 
         let tileset = load_texture("assets/tileset.png").await?;
@@ -45,6 +55,12 @@ impl Resources {
             collision_world,
             bomb,
             player,
+            fire: ExplosionTextures {
+                middle: expl_middle,
+                tail: expl_tail,
+                side: expl_side,
+                tri_way: expl_tri_way,
+            },
         })
     }
 }

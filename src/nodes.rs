@@ -10,6 +10,7 @@ use crate::Resources;
 
 mod bomb;
 mod player;
+mod fire;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 300.0;
@@ -42,8 +43,8 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
-    let player = scene::add_node(player::Player::new(vec2(10., 10.)));
-    scene::add_node(bomb::Bomb::new(vec2(10., 10.), player));
+    let player = scene::add_node(player::Player::new(vec2(32., 32.)));
+    scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
 
     let resources = storage::get::<Resources>();
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
