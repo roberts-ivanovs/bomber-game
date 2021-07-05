@@ -9,6 +9,7 @@ use crate::gui::Scene;
 use crate::Resources;
 
 mod bomb;
+mod camera;
 mod player;
 
 pub mod consts {
@@ -48,6 +49,11 @@ pub async fn main_game() -> Scene {
     let resources = storage::get::<Resources>();
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
     let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
+
+    let camera = scene::add_node(camera::Camera::new(
+        Rect::new(0.0, 0.0, w as f32, h as f32),
+        400.0,
+    ));
 
     loop {
         clear_background(WHITE);

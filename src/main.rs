@@ -18,8 +18,11 @@ struct Resources {
 impl Resources {
     async fn new() -> Result<Resources, macroquad::prelude::FileError> {
         let bomb = load_texture("assets/tiles/bomb.png").await?;
+        bomb.set_filter(FilterMode::Nearest);
+
         let fire = load_texture("assets/tiles/fire.png").await?;
         let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
+        player.set_filter(FilterMode::Nearest);
 
         let tileset = load_texture("assets/tileset.png").await?;
         tileset.set_filter(FilterMode::Nearest);
