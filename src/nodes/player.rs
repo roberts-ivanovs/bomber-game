@@ -70,7 +70,8 @@ impl scene::Node for Player {
         } else if is_key_down(KeyCode::Down) {
             node.bomber.speed.y = -RUN_SPEED;
         } else {
-            // node.bomber.speed.x = 0.;
+            node.bomber.speed.x = 0.;
+            node.bomber.speed.y = 0.;
         }
 
         world.move_h(node.bomber.collider, node.bomber.speed.x * get_frame_time());
