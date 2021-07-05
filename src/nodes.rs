@@ -42,7 +42,7 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
-    let player = scene::add_node(player::Player::new(vec2(10., 10.)));
+    let player = scene::add_node(player::Player::new(vec2(32., 32.)));
     scene::add_node(bomb::Bomb::new(vec2(10., 10.), player));
 
     let resources = storage::get::<Resources>();
