@@ -17,12 +17,12 @@ fn convert_to_absolute(num: f32) -> f32 {
     return num * consts::TILE_SIZE;
 }
 pub async fn main_game() -> Scene {
-    let tilemap = load_texture("assets/tilemap.png").await.unwrap();
+    let tileset = load_texture("assets/tileset.png").await.unwrap();
 
-    // initialize tilemap
+    // initialize tileset
     let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
     let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
-    let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
+    let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
 
     let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
     let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
