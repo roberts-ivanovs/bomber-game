@@ -9,6 +9,7 @@ use crate::gui::Scene;
 use crate::Resources;
 
 mod bomb;
+mod level_bg;
 mod player;
 
 pub mod consts {
@@ -42,19 +43,15 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
+    // let resources = storage::get::<Resources>();
+
+    scene::add_node(level_bg::LevelBg::new());
+
     let player = scene::add_node(player::Player::new(vec2(32., 32.)));
     scene::add_node(bomb::Bomb::new(vec2(10., 10.), player));
 
-    let resources = storage::get::<Resources>();
-    let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-    let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
-
     loop {
         clear_background(WHITE);
-
-        resources
-            .tiled_map
-            .draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
 
         next_frame().await;
         if is_key_pressed(KeyCode::Escape) {
