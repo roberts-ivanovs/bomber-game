@@ -11,6 +11,7 @@ use gui::Scene;
 struct Resources {
     player: Texture2D,
     tiled_map: tiled::Map,
+    bg_1: Texture2D,
     collision_world: CollisionWorld,
     bomb: Texture2D,
 }
@@ -21,11 +22,11 @@ impl Resources {
         let fire = load_texture("assets/tiles/fire.png").await?;
         let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
 
-        let tileset = load_texture("assets/tileset.png").await?;
-        tileset.set_filter(FilterMode::Nearest);
+        let bg_1 = load_texture("assets/tileset.png").await?;
+        bg_1.set_filter(FilterMode::Nearest);
 
         let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
-        let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
+        let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", bg_1)], &[]).unwrap();
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
@@ -43,6 +44,7 @@ impl Resources {
         Ok(Resources {
             tiled_map,
             collision_world,
+            bg_1,
             bomb,
             player,
         })
