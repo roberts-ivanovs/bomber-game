@@ -1,9 +1,17 @@
-use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad_platformer::*;
 use macroquad_tiled as tiled;
 
+use macroquad::{
+    experimental::{
+        collections::storage,
+        coroutines::start_coroutine,
+    },
+};
+
 use crate::gui::Scene;
+
+use crate::Resources;
 
 mod bomb;
 mod player;
@@ -16,21 +24,37 @@ pub mod consts {
 fn convert_to_absolute(num: f32) -> f32 {
     return num * consts::TILE_SIZE;
 }
+
 pub async fn main_game() -> Scene {
-    let tileset = load_texture("assets/tileset.png").await.unwrap();
+    let resources_loading = start_coroutine(async move {
+        let resources = Resources::new().await.unwrap();
+        storage::store(resources);
+    });
 
-    // initialize tileset
-    let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
-    let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
-    let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
+    while resources_loading.is_done() == false {
+        clear_background(BLACK);
+        draw_text(
+            &format!(
+                "Loading resources {}",
+                ".".repeat(((get_time() * 2.0) as usize) % 4)
+            ),
+            screen_width() / 2.0 - 160.0,
+            screen_height() / 2.0,
+            40.,
+            WHITE,
+        );
 
-    let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
-    let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
+        next_frame().await;
+    }
+
+    let resources = storage::get::<Resources>();
+    let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
+    let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
 
     loop {
         clear_background(WHITE);
 
-        tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
+        resources.tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
 
         next_frame().await;
         if is_key_pressed(KeyCode::Escape) {
