@@ -10,7 +10,6 @@ use crate::Resources;
 
 pub struct Bomber {
     pub collider: Actor,
-    pos: Vec2,
     speed: Vec2,
 }
 
@@ -20,7 +19,6 @@ impl Bomber {
 
         Self {
             collider: resources.collision_world.add_actor(spawner_pos, 30, 30),
-            pos: spawner_pos,
             speed: vec2(0., 0.),
         }
     }
@@ -32,7 +30,7 @@ impl Bomber {
 
         draw_texture_ex(
             resources.player,
-            pos.x - 16.,
+            pos.x,
             pos.y,
             WHITE,
             DrawTextureParams {
@@ -58,20 +56,6 @@ impl Player {
 impl scene::Node for Player {
     fn draw(mut node: RefMut<Self>) {
         node.bomber.draw();
-        // let resources = storage::get_mut::<Resources>();
-
-        // let pos = resources.collision_world.actor_pos(node.collider);
-
-        // draw_texture_ex(
-        //     resources.player,
-        //     pos.x - 16.,
-        //     pos.y,
-        //     WHITE,
-        //     DrawTextureParams {
-        //         source: Some(Rect::new(0.0, 0.0, 32., 32.)),
-        //         ..Default::default()
-        //     },
-        // );
     }
 
     fn update(mut node: RefMut<Self>) {
@@ -86,7 +70,7 @@ impl scene::Node for Player {
         } else if is_key_down(KeyCode::Down) {
             node.bomber.speed.y = -RUN_SPEED;
         } else {
-            node.bomber.speed.x = 0.;
+            // node.bomber.speed.x = 0.;
         }
 
         world.move_h(node.bomber.collider, node.bomber.speed.x * get_frame_time());
