@@ -2,12 +2,7 @@ use macroquad::prelude::*;
 use macroquad_platformer::*;
 use macroquad_tiled as tiled;
 
-use macroquad::{
-    experimental::{
-        collections::storage,
-        coroutines::start_coroutine,
-    },
-};
+use macroquad::experimental::{collections::storage, coroutines::start_coroutine};
 
 use crate::gui::Scene;
 
@@ -47,6 +42,9 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
+    let player = scene::add_node(player::Player::new(vec2(10., 10.)));
+    scene::add_node(bomb::Bomb::new(vec2(10., 10.), player));
+
     let resources = storage::get::<Resources>();
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
     let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
@@ -54,7 +52,9 @@ pub async fn main_game() -> Scene {
     loop {
         clear_background(WHITE);
 
-        resources.tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
+        resources
+            .tiled_map
+            .draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
 
         next_frame().await;
         if is_key_pressed(KeyCode::Escape) {
