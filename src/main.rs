@@ -1,34 +1,49 @@
+use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad_platformer::World as CollisionWorld;
 use macroquad_tiled as tiled;
 
+mod gui;
 mod nodes;
 
-use macroquad_platformer::*;
+use gui::Scene;
 
-pub mod consts {
-    pub const RUN_SPEED: f32 = 300.0;
-    pub const TILE_SIZE: f32 = 32.;
+struct ExplosionTextures {
+    deg_90: Texture2D,
+    fourway: Texture2D,
+    side: Texture2D,
+    tail: Texture2D,
+    threeway: Texture2D,
+    twoway: Texture2D,
 }
-
 struct Resources {
     player: Texture2D,
     tiled_map: tiled::Map,
+    bg_1: Texture2D,
     collision_world: CollisionWorld,
     bomb: Texture2D,
+    fire: ExplosionTextures,
 }
 
 impl Resources {
     async fn new() -> Result<Resources, macroquad::prelude::FileError> {
-        let bomb = load_texture("assets/items/bomb.png").await?;
-        let fire = load_texture("assets/items/fire.png").await?;
-        let player = load_texture("assets/items/player.png").await?;
+        let bomb = load_texture("assets/tiles/bomb.png").await?;
+        bomb.set_filter(FilterMode::Nearest);
 
-        let tileset = load_texture("assets/tileset.png").await?;
-        tileset.set_filter(FilterMode::Nearest);
+        let expl_90deg = load_texture("assets/tiles/explosion/explosion-90deg.png").await?;
+        let expl_fourway = load_texture("assets/tiles/explosion/explosion-fourway.png").await?;
+        let expl_side = load_texture("assets/tiles/explosion/explosion-side.png").await?;
+        let expl_tail = load_texture("assets/tiles/explosion/explosion-tail.png").await?;
+        let expl_threeway = load_texture("assets/tiles/explosion/explosion-threeway.png").await?;
+        let expl_twoway = load_texture("assets/tiles/explosion/explosion-twoway.png").await?;
+        let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
+        player.set_filter(FilterMode::Nearest);
 
-        let tiled_map_json = load_string("assets/map.json").await.unwrap();
-        let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
+        let bg_1 = load_texture("assets/tileset.png").await?;
+        bg_1.set_filter(FilterMode::Nearest);
+
+        let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
+        let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", bg_1)], &[]).unwrap();
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
@@ -46,38 +61,47 @@ impl Resources {
         Ok(Resources {
             tiled_map,
             collision_world,
+            bg_1,
             bomb,
             player,
+            fire: ExplosionTextures {
+                deg_90: expl_90deg,
+                fourway: expl_fourway,
+                side: expl_side,
+                tail: expl_tail,
+                threeway: expl_threeway,
+                twoway: expl_twoway,
+            },
         })
     }
 }
 
-#[macroquad::main("Bomber")]
-async fn main() {
-    fn convert_to_absolute(num: f32) -> f32 {
-        return num * consts::TILE_SIZE;
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Ether Bomber".to_owned(),
+        fullscreen: true,
+        ..Default::default()
     }
-    // set height and width of tiles by 32x32
-    // let width = convert_to_absolute(11.);
-    // let height = convert_to_absolute(11.);
-
-
+}
+#[macroquad::main(window_conf)]
+async fn main() {
     // load textures
-    let tilemap = load_texture("assets/tilemap.png").await.unwrap();
+    let gui_resources = gui::GuiResources::new();
+    storage::store(gui_resources);
 
-    // initialize tilemap
-    let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
-    let tileset_json = load_string("assets/Tiled_Tiles.json").await.unwrap();
-    let tiled_map = tiled::load_map(&tiled_map_json, &[("tilemap.png", tilemap)], &[]).unwrap();
-
-    let w = tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width;
-    let h = tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height;
-
+    //let mut next_scene = gui::matchmaking_lobby().await;
+    let mut next_scene = Scene::MainMenu;
     loop {
-        clear_background(WHITE);
-
-        tiled_map.draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
-
-        next_frame().await;
+        match next_scene {
+            Scene::MainMenu => {
+                next_scene = gui::main_menu().await;
+            }
+            Scene::Credits => {
+                next_scene = gui::credits().await;
+            }
+            Scene::Game => {
+                next_scene = nodes::main_game().await;
+            }
+        }
     }
 }
