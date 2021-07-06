@@ -10,9 +10,9 @@ use crate::Resources;
 
 mod bomb;
 mod camera;
+mod fire;
 mod level_bg;
 mod player;
-mod fire;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 300.0;
@@ -57,10 +57,7 @@ pub async fn main_game() -> Scene {
     let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
     drop(resources);
 
-    let camera = scene::add_node(camera::Camera::new(
-        Rect::new(0.0, 0.0, w as f32, h as f32),
-        400.0,
-    ));
+    let camera = scene::add_node(camera::Camera::new(352.0));
 
     loop {
         clear_background(WHITE);
