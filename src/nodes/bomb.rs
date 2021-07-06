@@ -10,7 +10,7 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::player::Player;
+use super::player::{Bomber, Player};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]
@@ -19,17 +19,17 @@ pub enum BombType {
 }
 
 pub struct Bomb {
-    player: scene::Handle<Player>,
+    bomber: scene::Handle<Bomber>,
     pos: Vec2,
     detonation_in_milliseconds: f32,
     bomb_type: BombType,
 }
 
 impl Bomb {
-    pub fn new(pos: Vec2, player: scene::Handle<Player>) -> Self {
+    pub fn new(pos: Vec2, bomber: scene::Handle<Bomber>) -> Self {
         Self {
             pos,
-            player,
+            bomber,
             detonation_in_milliseconds: 3000., // explore after three seconds
             bomb_type: BombType::Basic,
         }
