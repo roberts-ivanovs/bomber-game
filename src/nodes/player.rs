@@ -16,7 +16,7 @@ use macroquad::{
 
 use macroquad::experimental::{collections::storage, scene::RefMut};
 
-use super::consts::RUN_SPEED;
+use super::{bomb::BombType, consts::RUN_SPEED};
 
 use crate::Resources;
 
@@ -34,25 +34,18 @@ pub struct Bomber {
     speed: Vec2,
     pos: Vec2,
     input: Input,
-    state_machine: StateMachine<RefMut<Player>>,
+    current_bomb_type: BombType,
 }
 
 impl Bomber {
-    const ST_NORMAL: usize = 0;
-
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut resources = storage::get_mut::<Resources>();
-
-        let mut state_machine = StateMachine::new();
-
-        state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
-
         Self {
-            collider: resources.collision_world.add_actor(spawner_pos, 30, 30),
+            collider: resources.collision_world.add_actor(spawner_pos, 32, 32),
             pos: spawner_pos,
             input: Default::default(),
-            state_machine,
             speed: vec2(0., 0.),
+            current_bomb_type: BombType::Basic
         }
     }
 
@@ -60,7 +53,7 @@ impl Bomber {
         let resources = storage::get::<Resources>();
 
         let pos = resources.collision_world.actor_pos(self.collider);
-
+        println!("draw    : {:?}", pos);
         draw_texture_ex(
             resources.player,
             pos.x,
@@ -71,53 +64,6 @@ impl Bomber {
                 ..Default::default()
             },
         );
-    }
-    fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
-        let node = &mut **node;
-
-        if node.input.up {
-            node.bomber.speed.y = RUN_SPEED;
-        } else if node.input.right {
-            node.bomber.speed.x = RUN_SPEED;
-        } else if node.input.left {
-            node.bomber.speed.x = -RUN_SPEED;
-        } else if node.input.down {
-            node.bomber.speed.y = -RUN_SPEED;
-        } else {
-            node.bomber.speed.x = 0.;
-            node.bomber.speed.y = 0.;
-        }
-    }
-}
-
-impl scene::Node for Bomber {
-    fn draw(mut node: RefMut<Self>) {
-        node.draw();
-    }
-
-    fn update(mut node: RefMut<Self>) {
-        let world = &mut storage::get_mut::<Resources>().collision_world;
-
-        node.input.up = is_key_pressed(KeyCode::Up) || is_key_pressed(KeyCode::W);
-        node.input.left = is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::A);
-        node.input.down = is_key_pressed(KeyCode::Down) || is_key_pressed(KeyCode::S);
-        node.input.right = is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::D);
-
-        // if is_key_down(KeyCode::Right) {
-        //     node.bomber.speed.x = RUN_SPEED;
-        // } else if is_key_down(KeyCode::Left) {
-        //     node.bomber.speed.x = -RUN_SPEED;
-        // } else if is_key_down(KeyCode::Up) {
-        //     node.bomber.speed.y = RUN_SPEED;
-        // } else if is_key_down(KeyCode::Down) {
-        //     node.bomber.speed.y = -RUN_SPEED;
-        // } else {
-        //     node.bomber.speed.x = 0.;
-        //     node.bomber.speed.y = 0.;
-        // }
-
-        world.move_h(node.collider, node.speed.x * get_frame_time());
-        world.move_v(node.collider, node.speed.y * get_frame_time());
     }
 }
 
@@ -130,11 +76,23 @@ pub struct Player {
 
 impl Player {
     const ST_NORMAL: usize = 0;
+    const ST_DEATH: usize = 1;
+    const ST_PUTTING_BOMB: usize = 2;
 
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut state_machine = StateMachine::new();
-
         state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
+        state_machine.add_state(
+            Self::ST_DEATH,
+            State::new()
+            // .coroutine(Self::death_coroutine),
+        );
+        state_machine.add_state(
+            Self::ST_PUTTING_BOMB,
+            State::new()
+                // .update(Self::update_bomb_down)
+                // .coroutine(Self::bomb_down_coroutine),
+        );
 
         Player {
             bomber: Bomber::new(spawner_pos),
@@ -154,18 +112,56 @@ impl Player {
 
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
         let node = &mut **node;
+        let bomber = &mut node.bomber;
 
         if node.input.up {
-            node.bomber.speed.y = RUN_SPEED;
+            bomber.speed.y = -RUN_SPEED;
         } else if node.input.right {
-            node.bomber.speed.x = RUN_SPEED;
+            bomber.speed.x = RUN_SPEED;
         } else if node.input.left {
-            node.bomber.speed.x = -RUN_SPEED;
+            bomber.speed.x = -RUN_SPEED;
         } else if node.input.down {
-            node.bomber.speed.y = -RUN_SPEED;
+            bomber.speed.y = RUN_SPEED;
         } else {
-            node.bomber.speed.x = 0.;
-            node.bomber.speed.y = 0.;
+            bomber.speed.x = 0.;
+            bomber.speed.y = 0.;
         }
+
+        if bomber.input.place_bomb {
+            match bomber.current_bomb_type {
+                BombType::Basic => node.state_machine.set_state(Self::ST_PUTTING_BOMB),
+            }
+        }
+    }
+}
+
+impl scene::Node for Player {
+    fn draw(mut node: RefMut<Self>) {
+        node.bomber.draw();
+    }
+
+    fn update(mut node: RefMut<Self>) {
+        node.input.up = is_key_down(KeyCode::Up) || is_key_down(KeyCode::W);
+        node.input.left = is_key_down(KeyCode::Left) || is_key_down(KeyCode::A);
+        node.input.down = is_key_down(KeyCode::Down) || is_key_down(KeyCode::S);
+        node.input.right = is_key_down(KeyCode::Right) || is_key_down(KeyCode::D);
+
+        {
+            let node = &mut *node;
+            let bomber = &mut node.bomber;
+
+            let mut resources = storage::get_mut::<Resources>();
+            resources
+                .collision_world
+                .move_h(bomber.collider, bomber.speed.x * get_frame_time());
+            let moved = resources
+                .collision_world
+                .move_v(bomber.collider, bomber.speed.y * get_frame_time());
+
+            bomber.pos = resources.collision_world.actor_pos(bomber.collider);
+            println!("bomber.pos {:?}| moved {:?}",  bomber.pos, moved);
+
+        }
+        StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }
 }

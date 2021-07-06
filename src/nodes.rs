@@ -15,7 +15,7 @@ mod level_bg;
 mod player;
 
 pub mod consts {
-    pub const RUN_SPEED: f32 = 32.0;
+    pub const RUN_SPEED: f32 = 532.0;
     pub const TILE_SIZE: f32 = 32.;
 }
 
@@ -45,12 +45,10 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
-    // let resources = storage::get::<Resources>();
-
     scene::add_node(level_bg::LevelBg::new());
 
-    let bomber = scene::add_node(player::Bomber::new(vec2(32., 32.)));
-    scene::add_node(bomb::Bomb::new(vec2(32., 32.), bomber));
+    let player = scene::add_node(player::Player::new(vec2(32., 32.)));
+    scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
 
     let resources = storage::get::<Resources>();
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;

@@ -47,6 +47,7 @@ impl Resources {
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
+
             static_colliders.push(tile.is_some());
         }
         let mut collision_world = CollisionWorld::new();

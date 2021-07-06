@@ -19,17 +19,17 @@ pub enum BombType {
 }
 
 pub struct Bomb {
-    bomber: scene::Handle<Bomber>,
+    player: scene::Handle<Player>,
     pos: Vec2,
     detonation_in_milliseconds: f32,
     bomb_type: BombType,
 }
 
 impl Bomb {
-    pub fn new(pos: Vec2, bomber: scene::Handle<Bomber>) -> Self {
+    pub fn new(pos: Vec2, player: scene::Handle<Player>) -> Self {
         Self {
             pos,
-            bomber,
+            player,
             detonation_in_milliseconds: 3000., // explore after three seconds
             bomb_type: BombType::Basic,
         }
