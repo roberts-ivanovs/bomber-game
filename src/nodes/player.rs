@@ -16,7 +16,10 @@ use macroquad::{
 
 use macroquad::experimental::{collections::storage, scene::RefMut};
 
-use super::{bomb::BombType, consts::RUN_SPEED};
+use super::{
+    bomb::{self, BombType},
+    consts::RUN_SPEED,
+};
 
 use crate::Resources;
 
@@ -45,7 +48,7 @@ impl Bomber {
             pos: spawner_pos,
             input: Default::default(),
             speed: vec2(0., 0.),
-            current_bomb_type: BombType::Basic
+            current_bomb_type: BombType::Basic,
         }
     }
 
@@ -84,14 +87,11 @@ impl Player {
         state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
         state_machine.add_state(
             Self::ST_DEATH,
-            State::new()
-            // .coroutine(Self::death_coroutine),
+            State::new(), // .coroutine(Self::death_coroutine),
         );
         state_machine.add_state(
             Self::ST_PUTTING_BOMB,
-            State::new()
-                // .update(Self::update_bomb_down)
-                // .coroutine(Self::bomb_down_coroutine),
+            State::new().update(Self::update_bomb_down),
         );
 
         Player {
@@ -122,6 +122,8 @@ impl Player {
             bomber.speed.x = -RUN_SPEED;
         } else if node.input.down {
             bomber.speed.y = RUN_SPEED;
+        } else if node.input.place_bomb {
+            scene::add_node(bomb::Bomb::new(vec2(32., 32.)));
         } else {
             bomber.speed.x = 0.;
             bomber.speed.y = 0.;
@@ -132,6 +134,10 @@ impl Player {
                 BombType::Basic => node.state_machine.set_state(Self::ST_PUTTING_BOMB),
             }
         }
+    }
+
+    fn update_bomb_down(node: &mut RefMut<Player>, _dt: f32) {
+        scene::add_node(bomb::Bomb::new(vec2(32., 32.)));
     }
 }
 
@@ -145,6 +151,7 @@ impl scene::Node for Player {
         node.input.left = is_key_down(KeyCode::Left) || is_key_down(KeyCode::A);
         node.input.down = is_key_down(KeyCode::Down) || is_key_down(KeyCode::S);
         node.input.right = is_key_down(KeyCode::Right) || is_key_down(KeyCode::D);
+        node.input.place_bomb = is_key_down(KeyCode::Space);
 
         {
             let node = &mut *node;
@@ -159,8 +166,7 @@ impl scene::Node for Player {
                 .move_v(bomber.collider, bomber.speed.y * get_frame_time());
 
             bomber.pos = resources.collision_world.actor_pos(bomber.collider);
-            println!("bomber.pos {:?}| moved {:?}",  bomber.pos, moved);
-
+            println!("bomber.pos {:?}| moved {:?}", bomber.pos, moved);
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }

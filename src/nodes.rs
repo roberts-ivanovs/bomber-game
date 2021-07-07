@@ -48,7 +48,7 @@ pub async fn main_game() -> Scene {
     scene::add_node(level_bg::LevelBg::new());
 
     let player = scene::add_node(player::Player::new(vec2(32., 32.)));
-    scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
+    // scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
 
     let resources = storage::get::<Resources>();
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;

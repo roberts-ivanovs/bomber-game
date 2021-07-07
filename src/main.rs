@@ -31,11 +31,23 @@ impl Resources {
         bomb.set_filter(FilterMode::Nearest);
 
         let expl_90deg = load_texture("assets/tiles/explosion/explosion-90deg.png").await?;
+        expl_90deg.set_filter(FilterMode::Nearest);
+
         let expl_fourway = load_texture("assets/tiles/explosion/explosion-fourway.png").await?;
+        expl_fourway.set_filter(FilterMode::Nearest);
+
         let expl_side = load_texture("assets/tiles/explosion/explosion-side.png").await?;
+        expl_side.set_filter(FilterMode::Nearest);
+
         let expl_tail = load_texture("assets/tiles/explosion/explosion-tail.png").await?;
+        expl_tail.set_filter(FilterMode::Nearest);
+
         let expl_threeway = load_texture("assets/tiles/explosion/explosion-threeway.png").await?;
+        expl_threeway.set_filter(FilterMode::Nearest);
+
         let expl_twoway = load_texture("assets/tiles/explosion/explosion-twoway.png").await?;
+        expl_twoway.set_filter(FilterMode::Nearest);
+
         let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
         player.set_filter(FilterMode::Nearest);
 
@@ -47,7 +59,6 @@ impl Resources {
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
-
             static_colliders.push(tile.is_some());
         }
         let mut collision_world = CollisionWorld::new();
