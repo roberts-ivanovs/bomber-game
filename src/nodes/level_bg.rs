@@ -49,7 +49,7 @@ impl scene::Node for LevelBg {
         let pos = vec2(0., 0.);
 
         draw_texture_ex(
-            resources.bg_1,
+            resources.tileset,
             100.0,
             100.0,
             WHITE,
