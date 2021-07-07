@@ -66,6 +66,6 @@ impl scene::Node for LevelBg {
 
         resources
             .tiled_map
-            .draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
+            .draw_tiles("walls", Rect::new(0.0, 0.0, w as f32, h as f32), None);
     }
 }

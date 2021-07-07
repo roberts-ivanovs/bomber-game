@@ -46,8 +46,7 @@ impl Resources {
         let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", bg_1)], &[]).unwrap();
 
         let mut static_colliders = vec![];
-        for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
-
+        for (_x, _y, tile) in tiled_map.tiles("walls", None) {
             static_colliders.push(tile.is_some());
         }
         let mut collision_world = CollisionWorld::new();
