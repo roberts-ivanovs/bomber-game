@@ -49,7 +49,7 @@ impl scene::Node for LevelBg {
         let pos = vec2(0., 0.);
 
         draw_texture_ex(
-            resources.bg_1,
+            resources.tileset,
             100.0,
             100.0,
             WHITE,
@@ -66,6 +66,6 @@ impl scene::Node for LevelBg {
 
         resources
             .tiled_map
-            .draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
+            .draw_tiles("walls", Rect::new(0.0, 0.0, w as f32, h as f32), None);
     }
 }
