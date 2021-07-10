@@ -5,6 +5,7 @@ use macroquad_tiled as tiled;
 
 mod gui;
 mod nodes;
+mod js_interop;
 
 use gui::Scene;
 
@@ -47,6 +48,7 @@ impl Resources {
 
         let mut static_colliders = vec![];
         for (_x, _y, tile) in tiled_map.tiles("main layer", None) {
+
             static_colliders.push(tile.is_some());
         }
         let mut collision_world = CollisionWorld::new();
@@ -85,6 +87,8 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
+    js_interop::FromJS::hi_from_js();
+
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);

@@ -10,7 +10,7 @@ use macroquad::{
 
 use crate::Resources;
 
-use super::player::Player;
+use super::player::{Bomber, Player};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[repr(u8)]

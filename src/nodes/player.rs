@@ -2,24 +2,50 @@ use macroquad::prelude::*;
 
 use macroquad_platformer::Actor;
 
+use macroquad::{
+    audio::{self, play_sound_once},
+    color,
+    experimental::{
+        animation::{AnimatedSprite, Animation},
+        coroutines::{start_coroutine, wait_seconds, Coroutine},
+        state_machine::{State, StateMachine},
+    },
+    prelude::*,
+    ui::{self, hash},
+};
+
 use macroquad::experimental::{collections::storage, scene::RefMut};
 
-use super::consts::RUN_SPEED;
+use super::{bomb::BombType, consts::RUN_SPEED};
 
 use crate::Resources;
+
+#[derive(Default, Debug, Clone)]
+pub struct Input {
+    left: bool,
+    right: bool,
+    up: bool,
+    down: bool,
+    place_bomb: bool,
+}
 
 pub struct Bomber {
     pub collider: Actor,
     speed: Vec2,
+    pos: Vec2,
+    input: Input,
+    current_bomb_type: BombType,
 }
 
 impl Bomber {
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut resources = storage::get_mut::<Resources>();
-
         Self {
-            collider: resources.collision_world.add_actor(spawner_pos, 30, 30),
+            collider: resources.collision_world.add_actor(spawner_pos, 32, 32),
+            pos: spawner_pos,
+            input: Default::default(),
             speed: vec2(0., 0.),
+            current_bomb_type: BombType::Basic
         }
     }
 
@@ -27,7 +53,7 @@ impl Bomber {
         let resources = storage::get::<Resources>();
 
         let pos = resources.collision_world.actor_pos(self.collider);
-
+        println!("draw    : {:?}", pos);
         draw_texture_ex(
             resources.player,
             pos.x,
@@ -43,12 +69,68 @@ impl Bomber {
 
 pub struct Player {
     pub bomber: Bomber,
+    pos: Vec2,
+    input: Input,
+    state_machine: StateMachine<RefMut<Player>>,
 }
 
 impl Player {
+    const ST_NORMAL: usize = 0;
+    const ST_DEATH: usize = 1;
+    const ST_PUTTING_BOMB: usize = 2;
+
     pub fn new(spawner_pos: Vec2) -> Self {
+        let mut state_machine = StateMachine::new();
+        state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
+        state_machine.add_state(
+            Self::ST_DEATH,
+            State::new()
+            // .coroutine(Self::death_coroutine),
+        );
+        state_machine.add_state(
+            Self::ST_PUTTING_BOMB,
+            State::new()
+                // .update(Self::update_bomb_down)
+                // .coroutine(Self::bomb_down_coroutine),
+        );
+
         Player {
             bomber: Bomber::new(spawner_pos),
+            pos: spawner_pos,
+            state_machine,
+            input: Default::default(),
+        }
+    }
+
+    pub fn pos(&self) -> Vec2 {
+        self.pos
+    }
+
+    pub fn set_pos(&mut self, pos: Vec2) {
+        self.pos = pos
+    }
+
+    fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
+        let node = &mut **node;
+        let bomber = &mut node.bomber;
+
+        if node.input.up {
+            bomber.speed.y = -RUN_SPEED;
+        } else if node.input.right {
+            bomber.speed.x = RUN_SPEED;
+        } else if node.input.left {
+            bomber.speed.x = -RUN_SPEED;
+        } else if node.input.down {
+            bomber.speed.y = RUN_SPEED;
+        } else {
+            bomber.speed.x = 0.;
+            bomber.speed.y = 0.;
+        }
+
+        if bomber.input.place_bomb {
+            match bomber.current_bomb_type {
+                BombType::Basic => node.state_machine.set_state(Self::ST_PUTTING_BOMB),
+            }
         }
     }
 }
@@ -59,22 +141,27 @@ impl scene::Node for Player {
     }
 
     fn update(mut node: RefMut<Self>) {
-        let world = &mut storage::get_mut::<Resources>().collision_world;
+        node.input.up = is_key_down(KeyCode::Up) || is_key_down(KeyCode::W);
+        node.input.left = is_key_down(KeyCode::Left) || is_key_down(KeyCode::A);
+        node.input.down = is_key_down(KeyCode::Down) || is_key_down(KeyCode::S);
+        node.input.right = is_key_down(KeyCode::Right) || is_key_down(KeyCode::D);
 
-        if is_key_down(KeyCode::Right) {
-            node.bomber.speed.x = RUN_SPEED;
-        } else if is_key_down(KeyCode::Left) {
-            node.bomber.speed.x = -RUN_SPEED;
-        } else if is_key_down(KeyCode::Up) {
-            node.bomber.speed.y = RUN_SPEED;
-        } else if is_key_down(KeyCode::Down) {
-            node.bomber.speed.y = -RUN_SPEED;
-        } else {
-            node.bomber.speed.x = 0.;
-            node.bomber.speed.y = 0.;
+        {
+            let node = &mut *node;
+            let bomber = &mut node.bomber;
+
+            let mut resources = storage::get_mut::<Resources>();
+            resources
+                .collision_world
+                .move_h(bomber.collider, bomber.speed.x * get_frame_time());
+            let moved = resources
+                .collision_world
+                .move_v(bomber.collider, bomber.speed.y * get_frame_time());
+
+            bomber.pos = resources.collision_world.actor_pos(bomber.collider);
+            println!("bomber.pos {:?}| moved {:?}",  bomber.pos, moved);
+
         }
-
-        world.move_h(node.bomber.collider, node.bomber.speed.x * get_frame_time());
-        world.move_v(node.bomber.collider, node.bomber.speed.y * get_frame_time());
+        StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }
 }
