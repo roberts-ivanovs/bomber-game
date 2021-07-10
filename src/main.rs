@@ -5,6 +5,7 @@ use macroquad_tiled as tiled;
 
 mod gui;
 mod nodes;
+mod js_interop;
 
 use gui::Scene;
 
@@ -86,6 +87,8 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
+    js_interop::FromJS::hi_from_js();
+
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
