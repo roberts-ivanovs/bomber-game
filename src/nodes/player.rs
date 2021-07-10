@@ -19,6 +19,7 @@ use macroquad::experimental::{collections::storage, scene::RefMut};
 use super::{
     bomb::{self, BombType},
     consts::RUN_SPEED,
+    get_nearest_tile,
 };
 
 use crate::Resources;
@@ -56,7 +57,7 @@ impl Bomber {
         let resources = storage::get::<Resources>();
 
         let pos = resources.collision_world.actor_pos(self.collider);
-        println!("draw    : {:?}", pos);
+        println!("player.pos    : {:?}", pos);
         draw_texture_ex(
             resources.player,
             pos.x,
@@ -73,6 +74,7 @@ impl Bomber {
 pub struct Player {
     pub bomber: Bomber,
     pos: Vec2,
+    bomb_place_time: f64,
     input: Input,
     state_machine: StateMachine<RefMut<Player>>,
 }
@@ -85,17 +87,11 @@ impl Player {
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut state_machine = StateMachine::new();
         state_machine.add_state(Self::ST_NORMAL, State::new().update(Self::update_normal));
-        state_machine.add_state(
-            Self::ST_DEATH,
-            State::new(), // .coroutine(Self::death_coroutine),
-        );
-        state_machine.add_state(
-            Self::ST_PUTTING_BOMB,
-            State::new().update(Self::update_bomb_down),
-        );
+        state_machine.add_state(Self::ST_DEATH, State::new());
 
         Player {
             bomber: Bomber::new(spawner_pos),
+            bomb_place_time: 0.,
             pos: spawner_pos,
             state_machine,
             input: Default::default(),
@@ -130,15 +126,21 @@ impl Player {
             bomber.speed.x = 0.;
         }
 
-        if bomber.input.place_bomb {
-            match bomber.current_bomb_type {
-                BombType::Basic => node.state_machine.set_state(Self::ST_PUTTING_BOMB),
+        if node.input.place_bomb {
+            if get_time() - node.bomb_place_time > 3. {
+                match bomber.current_bomb_type {
+                    BombType::Basic => node.place_bomb(),
+                }
             }
         }
     }
 
-    fn update_bomb_down(node: &mut RefMut<Player>, _dt: f32) {
-        scene::add_node(bomb::Bomb::new(vec2(32., 32.)));
+    fn place_bomb(&mut self) {
+        let resources = storage::get::<Resources>();
+        let pos = resources.collision_world.actor_pos(self.bomber.collider);
+        scene::add_node(bomb::Bomb::new(get_nearest_tile(pos)));
+
+        self.bomb_place_time = get_time();
     }
 }
 
@@ -167,7 +169,6 @@ impl scene::Node for Player {
                 .move_v(bomber.collider, bomber.speed.y * get_frame_time());
 
             bomber.pos = resources.collision_world.actor_pos(bomber.collider);
-            println!("bomber.pos {:?}| moved {:?}", bomber.pos, moved);
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }
