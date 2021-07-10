@@ -116,17 +116,18 @@ impl Player {
 
         if node.input.up {
             bomber.speed.y = -RUN_SPEED;
-        } else if node.input.right {
+        } else if node.input.down {
+            bomber.speed.y = RUN_SPEED;
+        } else {
+            bomber.speed.y = 0.;
+        }
+
+        if node.input.right {
             bomber.speed.x = RUN_SPEED;
         } else if node.input.left {
             bomber.speed.x = -RUN_SPEED;
-        } else if node.input.down {
-            bomber.speed.y = RUN_SPEED;
-        } else if node.input.place_bomb {
-            scene::add_node(bomb::Bomb::new(vec2(32., 32.)));
         } else {
             bomber.speed.x = 0.;
-            bomber.speed.y = 0.;
         }
 
         if bomber.input.place_bomb {
