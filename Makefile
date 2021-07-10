@@ -6,3 +6,4 @@ website: src
 	cp target/wasm32-unknown-unknown/release/bomber.wasm $(OUTPUTDIR)/public/bomber.wasm
 	cp -r assets $(OUTPUTDIR)/public/assets
 	cd www && yarn install
+	touch www/pages/index.tsx
