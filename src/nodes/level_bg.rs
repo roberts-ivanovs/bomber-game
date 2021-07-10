@@ -48,17 +48,6 @@ impl scene::Node for LevelBg {
         let resources = storage::get::<Resources>();
         let pos = vec2(0., 0.);
 
-        draw_texture_ex(
-            resources.bg_1,
-            100.0,
-            100.0,
-            WHITE,
-            DrawTextureParams {
-                dest_size: Some(vec2(1000.0, 1500.0)),
-                ..Default::default()
-            },
-        );
-
         let w =
             resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
         let h =
@@ -66,6 +55,6 @@ impl scene::Node for LevelBg {
 
         resources
             .tiled_map
-            .draw_tiles("main layer", Rect::new(0.0, 0.0, w as f32, h as f32), None);
+            .draw_tiles("walls", Rect::new(0.0, 0.0, w as f32, h as f32), None);
     }
 }

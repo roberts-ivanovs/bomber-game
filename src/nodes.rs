@@ -8,6 +8,8 @@ use crate::gui::Scene;
 
 use crate::Resources;
 
+use self::consts::TILE_SIZE;
+
 mod bomb;
 mod camera;
 mod fire;
@@ -15,12 +17,19 @@ mod level_bg;
 mod player;
 
 pub mod consts {
-    pub const RUN_SPEED: f32 = 532.0;
+    pub const RUN_SPEED: f32 = 100.0;
     pub const TILE_SIZE: f32 = 32.;
 }
 
 fn convert_to_absolute(num: f32) -> f32 {
     return num * consts::TILE_SIZE;
+}
+
+fn get_nearest_tile(loc: Vec2) -> Vec2 {
+    vec2(
+        (loc.x / TILE_SIZE).round() * TILE_SIZE,
+        (loc.y / TILE_SIZE).round() * TILE_SIZE,
+    )
 }
 
 pub async fn main_game() -> Scene {
@@ -48,7 +57,7 @@ pub async fn main_game() -> Scene {
     scene::add_node(level_bg::LevelBg::new());
 
     let player = scene::add_node(player::Player::new(vec2(32., 32.)));
-    scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
+    // scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
 
     let resources = storage::get::<Resources>();
     let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
