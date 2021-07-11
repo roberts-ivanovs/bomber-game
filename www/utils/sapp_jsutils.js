@@ -1,11 +1,11 @@
 // Source: https://github.com/not-fl3/sapp-jsutils/blob/eacdd5c110b66a4951afb3334268a4addd875176/js/sapp_jsutils.js
-import { miniquad_add_plugin } from "./gl";
-var ctx = null;
+import { miniquad_add_plugin, UTF8ToString } from "./gl";
+let ctx = null;
 
-js_objects = {}
-unique_js_id = 0
+let js_objects = {}
+let unique_js_id = 0
 
-register_plugin = function (importObject) {
+const register_plugin = function (importObject) {
     importObject.env.js_create_string = function (buf, max_len) {
         var string = UTF8ToString(buf, max_len);
         return js_object(string);

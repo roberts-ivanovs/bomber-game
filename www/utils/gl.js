@@ -1413,4 +1413,5 @@ module.exports = {
     load,
     wasm_exports,
     miniquad_add_plugin,
+    UTF8ToString,
 }

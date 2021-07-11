@@ -22,7 +22,7 @@ use super::{
     get_nearest_tile,
 };
 
-use crate::Resources;
+use crate::{js_interop::FromJS, Resources};
 
 #[derive(Default, Debug, Clone)]
 pub struct Input {
@@ -57,7 +57,6 @@ impl Bomber {
         let resources = storage::get::<Resources>();
 
         let pos = resources.collision_world.actor_pos(self.collider);
-        println!("player.pos    : {:?}", pos);
         draw_texture_ex(
             resources.player,
             pos.x,
@@ -145,6 +144,19 @@ impl Player {
 }
 
 impl scene::Node for Player {
+    fn ready(node: RefMut<Self>)
+    {
+        let handle = node.handle();
+        // user meta data logging
+        start_coroutine(async move {
+            loop {
+                wait_seconds(1.).await;
+                if let Some(this) = scene::try_get_node(handle) {
+                    FromJS::console_log(&format!("player.pos\t: {:?}", this.bomber.pos));
+                }
+            }
+        });
+    }
     fn draw(mut node: RefMut<Self>) {
         node.bomber.draw();
     }
@@ -164,7 +176,7 @@ impl scene::Node for Player {
             resources
                 .collision_world
                 .move_h(bomber.collider, bomber.speed.x * get_frame_time());
-            let moved = resources
+            resources
                 .collision_world
                 .move_v(bomber.collider, bomber.speed.y * get_frame_time());
 

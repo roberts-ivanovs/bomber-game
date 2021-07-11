@@ -98,8 +98,6 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
-    js_interop::FromJS::hi_from_js();
-
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
