@@ -1,14 +1,5 @@
 # Bomber game
 
-Prerequisites to install:
-
-    cargo
-
-## Run desktop game
-
-    cargo install
-    cargo run
-
 ## Run web-based game
 
 Prerequisites to install:
@@ -17,8 +8,10 @@ Prerequisites to install:
     nodejs
     make
 
-Run the project:
+Compile && start dev server:
+
+    ./run.sh
+
+Only compile (will auto refresh the dev server if it's on):
 
     make
-    cd www
-    yarn dev
