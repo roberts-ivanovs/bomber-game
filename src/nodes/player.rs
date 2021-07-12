@@ -19,6 +19,8 @@ use macroquad::experimental::{collections::storage, scene::RefMut};
 use super::{
     bomb::{self, BombType},
     consts::RUN_SPEED,
+    consts::PLAYER_W,
+    consts::PLAYER_H,
     get_nearest_tile,
 };
 
@@ -45,7 +47,7 @@ impl Bomber {
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut resources = storage::get_mut::<Resources>();
         Self {
-            collider: resources.collision_world.add_actor(spawner_pos, 32, 32),
+            collider: resources.collision_world.add_actor(spawner_pos, PLAYER_W as i32, PLAYER_H as i32),
             pos: spawner_pos,
             input: Default::default(),
             speed: vec2(0., 0.),
@@ -63,7 +65,7 @@ impl Bomber {
             pos.y,
             WHITE,
             DrawTextureParams {
-                source: Some(Rect::new(0.0, 0.0, 32., 32.)),
+                source: Some(Rect::new(0.0, 0.0, PLAYER_W, PLAYER_H)),
                 ..Default::default()
             },
         );

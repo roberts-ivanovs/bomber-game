@@ -19,6 +19,8 @@ mod player;
 pub mod consts {
     pub const RUN_SPEED: f32 = 100.0;
     pub const TILE_SIZE: f32 = 32.;
+    pub const PLAYER_W: f32 = 25.;
+    pub const PLAYER_H: f32 = 25.;
 }
 
 fn convert_to_absolute(num: f32) -> f32 {
