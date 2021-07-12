@@ -14,6 +14,7 @@ mod bomb;
 mod camera;
 mod fire;
 mod level_bg;
+mod walls;
 mod player;
 
 pub mod consts {
@@ -56,7 +57,7 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
-    scene::add_node(level_bg::LevelBg::new());
+    scene::add_node(walls::Walls::new());
 
     scene::add_node(player::Player::new(vec2(32., 32.)));
 
