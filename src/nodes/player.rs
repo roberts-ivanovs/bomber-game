@@ -46,6 +46,7 @@ pub struct Bomber {
 impl Bomber {
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut resources = storage::get_mut::<Resources>();
+
         Self {
             collider: resources.collision_world.add_actor(spawner_pos, PLAYER_W as i32, PLAYER_H as i32),
             pos: spawner_pos,
