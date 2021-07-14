@@ -18,3 +18,4 @@ macroquad-tiled = "0.1"
 macroquad-platformer = "0.1"
 macroquad-particles = { version = "0.1", features = ["nanoserde"] }
 sapp-jsutils = "0.1"
+rapier2d = { version = "*", features = [ "simd-stable" ] }
