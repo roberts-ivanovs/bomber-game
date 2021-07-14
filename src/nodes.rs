@@ -15,6 +15,7 @@ mod camera;
 mod fire;
 mod level_bg;
 mod walls;
+mod destroyable;
 mod player;
 
 pub mod consts {
@@ -58,6 +59,8 @@ pub async fn main_game() -> Scene {
     }
 
     scene::add_node(walls::Walls::new());
+
+    scene::add_node(destroyable::Destroyable::new());
 
     scene::add_node(player::Player::new(vec2(32., 32.)));
 
