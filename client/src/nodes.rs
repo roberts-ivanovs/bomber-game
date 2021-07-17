@@ -15,6 +15,8 @@ mod camera;
 mod fire;
 mod level_bg;
 mod player;
+mod remote_player;
+pub mod ws;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 100.0;

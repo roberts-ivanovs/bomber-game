@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useState } from 'react';
+import React, { ReactElement, useEffect, useMemo, useState } from 'react';
 
 interface Props {
   sourcePath: GlGames;
@@ -10,22 +10,23 @@ export enum GlGames {
 }
 
 export function GlLoader({ sourcePath }: Props): ReactElement {
-  const [gl, setGL] = useState<any>();
-  const [jsUtuls, setJSutils] = useState<any>();
+  // const [gl, setGL] = useState<any>();
+  // const [jsUtuls, setJSutils] = useState<any>();
   useEffect(() => {
     import('./gl.js').then(async (glLocal) => {
-      const jsUtilsLocal = await (import("./sapp_jsutils"));
       // Register a custom callback function
       const register_plugin = function (importObject: any) {
-        importObject.env.console_log_unsafe = function (toLog: number) {
-          console.log(jsUtilsLocal.consume_js_object(toLog));
+        importObject.env.console_log_unsafe = function (objId: number) {
+          console.log(glLocal.consume_js_object(objId));
         };
       };
-      glLocal.miniquad_add_plugin({register_plugin});
-      setGL(glLocal);
-      setJSutils(jsUtilsLocal);
+      glLocal.miniquad_add_plugin({
+        register_plugin,
+        name: 'bomber-interop',
+        version: '1',
+      });
+      glLocal.load(sourcePath);
     });
-  }, []);
-
-  return <script>{gl?.load(sourcePath)}</script>;
+  }, [sourcePath]);
+  return <></>;
 }

@@ -68,6 +68,16 @@ impl Bomber {
             },
         );
     }
+
+    /// Get a reference to the bomber's pos.
+    pub fn pos(&self) -> &Vec2 {
+        &self.pos
+    }
+
+    /// Set the bomber's pos.
+    pub fn set_pos(&mut self, pos: Vec2) {
+        self.pos = pos;
+    }
 }
 
 pub struct Player {
@@ -144,8 +154,7 @@ impl Player {
 }
 
 impl scene::Node for Player {
-    fn ready(node: RefMut<Self>)
-    {
+    fn ready(node: RefMut<Self>) {
         let handle = node.handle();
         // user meta data logging
         start_coroutine(async move {

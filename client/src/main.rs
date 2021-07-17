@@ -8,6 +8,8 @@ mod nodes;
 mod js_interop;
 
 use gui::Scene;
+use nodes::ws::WebSocketClient;
+use sapp_console_log::init;
 
 struct ExplosionTextures {
     deg_90: Texture2D,
@@ -98,12 +100,16 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
+    init().unwrap();
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
 
     //let mut next_scene = gui::matchmaking_lobby().await;
     let mut next_scene = Scene::MainMenu;
+    let ws_client = WebSocketClient::new("1".to_owned()).await;
+
+    scene::add_node(ws_client);
     loop {
         match next_scene {
             Scene::MainMenu => {

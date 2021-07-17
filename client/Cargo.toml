@@ -7,14 +7,15 @@ authors = [
     "Kristofers Volkovs <krystoart@gmail.com>",
     "Ronalds Palacis <ronalds.palacis@outlook.com>",
 ]
-
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bomber-shared = { path = "../shared" }
 macroquad = "0.3"
 nanoserde = "0.1"
 macroquad-tiled = "0.1"
 macroquad-platformer = "0.1"
 macroquad-particles = { version = "0.1", features = ["nanoserde"] }
 sapp-jsutils = "0.1"
+quad-net = "0.1.1"
+sapp-console-log = "0.1.9"

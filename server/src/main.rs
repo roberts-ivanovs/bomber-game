@@ -1,4 +1,3 @@
-
 // #![deny(warnings)]
 use std::collections::HashMap;
 use std::sync::{
@@ -31,8 +30,7 @@ async fn main() {
     // Turn our "state" into a new Filter...
     let users = warp::any().map(move || users.clone());
 
-    // GET /chat -> websocket upgrade
-    let chat = warp::path("chat")
+    let game = warp::path::end()
         // The `ws()` filter will prepare Websocket handshake...
         .and(warp::ws())
         .and(users)
@@ -42,11 +40,7 @@ async fn main() {
         });
 
     // GET / -> index html
-    let index = warp::path::end().map(|| warp::reply::html(INDEX_HTML));
-
-    let routes = index.or(chat);
-
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(game).run(([0, 0, 0, 0], 3030)).await;
 }
 
 async fn user_connected(ws: WebSocket, users: Users) {
@@ -93,19 +87,13 @@ async fn user_connected(ws: WebSocket, users: Users) {
 }
 
 async fn user_message(my_id: usize, msg: Message, users: &Users) {
-    // Skip any non-Text messages...
-    let msg = if let Ok(s) = msg.to_str() {
-        s
-    } else {
-        return;
-    };
-
-    let new_msg = format!("<User#{}>: {}", my_id, msg);
+    println!("{:?}", &msg);
+    // TODO Validate that the messages are not fake && are in correct format
 
     // New message from this user, send it to everyone else (except same uid)...
     for (&uid, tx) in users.read().await.iter() {
         if my_id != uid {
-            if let Err(_disconnected) = tx.send(Ok(Message::text(new_msg.clone()))) {
+            if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
                 // The tx is disconnected, our `user_disconnected` code
                 // should be happening in another task, nothing more to
                 // do here.
