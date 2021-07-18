@@ -82,3 +82,7 @@ pub async fn main_game() -> Scene {
     }
     Scene::MainMenu
 }
+
+pub async fn lobby() -> Scene {
+    Scene::MainMenu
+}

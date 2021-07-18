@@ -76,7 +76,9 @@ impl Bomber {
     /// Set the bomber's pos.
     pub fn set_pos(&mut self, pos: Vec2) {
         let mut resources = storage::get_mut::<Resources>();
-        resources.collision_world.set_actor_position(self.collider, pos);
+        resources
+            .collision_world
+            .set_actor_position(self.collider, pos);
     }
 }
 
@@ -108,7 +110,6 @@ impl Player {
     pub fn pos(&self) -> Vec2 {
         self.bomber.pos()
     }
-
 
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
         let node = &mut **node;

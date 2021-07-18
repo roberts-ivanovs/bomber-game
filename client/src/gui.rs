@@ -18,5 +18,6 @@ const WINDOW_HEIGHT: f32 = 300.0;
 pub enum Scene {
     MainMenu,
     Credits,
+    Lobby,
     Game,
 }

@@ -5,8 +5,8 @@ use macroquad_platformer::World as CollisionWorld;
 use macroquad_tiled as tiled;
 
 mod gui;
-mod nodes;
 mod js_interop;
+mod nodes;
 
 use gui::Scene;
 use nodes::ws::WebSocketClient;
@@ -119,6 +119,7 @@ async fn main() {
             Scene::Game => {
                 next_scene = nodes::main_game().await;
             }
+            Scene::Lobby => todo!(),
         }
     }
 }

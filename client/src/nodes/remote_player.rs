@@ -40,11 +40,9 @@ impl RemotePlayer {
     pub fn set_dead(&mut self, dead: bool) {
         self.dead = dead;
     }
-
 }
 impl scene::Node for RemotePlayer {
     fn draw(mut node: RefMut<Self>) {
-
         // Username
         draw_text_ex(
             &node.username,

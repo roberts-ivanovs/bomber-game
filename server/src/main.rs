@@ -96,7 +96,7 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
         if my_id != uid {
             let deserialized_msg: message::MessagesClientTx =
                 nanoserde::DeBin::deserialize_bin(&msg.as_bytes()).expect("Cant parse message");
-            let deserialized_msg = append_user_id( uid, deserialized_msg);
+            let deserialized_msg = append_user_id(uid, deserialized_msg);
             let msg_to_send = Message::binary(deserialized_msg);
             println!("Transmitting {:?} to {}", &msg_to_send, uid);
             if let Err(_disconnected) = tx.send(Ok(msg_to_send)) {

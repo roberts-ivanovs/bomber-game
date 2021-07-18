@@ -112,7 +112,7 @@ impl scene::Node for WebSocketClient {
                     player_id,
                 } => {
                     log::debug!("Before adding");
-                    let player =  RemotePlayer::new(username.0, player_id);
+                    let player = RemotePlayer::new(username.0, player_id);
                     log::debug!("Got player");
                     let remote_player = scene::add_node(player);
                     log::debug!("After adding");
