@@ -1,3 +1,4 @@
+use log::Level;
 use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad_platformer::World as CollisionWorld;
@@ -5,8 +6,11 @@ use macroquad_tiled as tiled;
 
 mod gui;
 mod nodes;
+mod js_interop;
 
 use gui::Scene;
+use nodes::ws::WebSocketClient;
+use sapp_console_log::{init, init_with_level};
 
 struct ExplosionTextures {
     deg_90: Texture2D,
@@ -16,6 +20,18 @@ struct ExplosionTextures {
     threeway: Texture2D,
     twoway: Texture2D,
 }
+
+struct MapSize {
+    w: u32,
+    h: u32,
+}
+
+impl MapSize {
+    pub fn new(w: u32, h: u32) -> Self {
+        MapSize {w, h}
+    }
+}
+
 struct Resources {
     player: Texture2D,
     tiled_map: tiled::Map,
@@ -23,6 +39,7 @@ struct Resources {
     collision_world: CollisionWorld,
     bomb: Texture2D,
     fire: ExplosionTextures,
+    map_size: MapSize,
 }
 
 impl Resources {
@@ -70,6 +87,11 @@ impl Resources {
             1,
         );
 
+        let map_size = MapSize::new(
+            tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width,
+            tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height,
+        );
+
         Ok(Resources {
             tiled_map,
             collision_world,
@@ -84,6 +106,7 @@ impl Resources {
                 threeway: expl_threeway,
                 twoway: expl_twoway,
             },
+            map_size,
         })
     }
 }
@@ -97,6 +120,7 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
+    init_with_level(Level::Debug).unwrap();
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);

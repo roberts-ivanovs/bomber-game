@@ -9,16 +9,23 @@ use crate::gui::Scene;
 use crate::Resources;
 
 use self::consts::TILE_SIZE;
+use self::ws::WebSocketClient;
 
 mod bomb;
 mod camera;
 mod fire;
 mod level_bg;
+mod walls;
+mod destroyable;
 mod player;
+mod remote_player;
+pub mod ws;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 100.0;
     pub const TILE_SIZE: f32 = 32.;
+    pub const PLAYER_W: f32 = 25.;
+    pub const PLAYER_H: f32 = 25.;
 }
 
 fn convert_to_absolute(num: f32) -> f32 {
@@ -54,17 +61,18 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
+    scene::add_node(walls::Walls::new());
+
+    let ws_client = WebSocketClient::new().await;
+    scene::add_node(ws_client);
+
     scene::add_node(level_bg::LevelBg::new());
 
-    let player = scene::add_node(player::Player::new(vec2(32., 32.)));
-    // scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
+    scene::add_node(destroyable::Destroyable::new());
 
-    let resources = storage::get::<Resources>();
-    let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-    let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
-    drop(resources);
+    scene::add_node(player::Player::new(vec2(32., 32.)));
 
-    let camera = scene::add_node(camera::Camera::new(352.0));
+    scene::add_node(camera::Camera::new(352.0));
 
     loop {
         clear_background(WHITE);

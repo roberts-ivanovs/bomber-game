@@ -1,8 +1,11 @@
-OUTPUTDIR=./www
+OUTPUTDIR=./www/public
+PROJECT_NAME=bomber
 
-website: src
+website: client
 	rustup target add wasm32-unknown-unknown
-	cargo build --target wasm32-unknown-unknown --release
-	cp target/wasm32-unknown-unknown/release/bomber.wasm $(OUTPUTDIR)/public/bomber.wasm
-	cp -r assets $(OUTPUTDIR)/public/assets
+	cargo build -p bomber --target wasm32-unknown-unknown --release
+	cp target/wasm32-unknown-unknown/release/$(PROJECT_NAME).wasm $(OUTPUTDIR)/$(PROJECT_NAME).wasm
+	rm -rf $(OUTPUTDIR)/assets
+	cp -r client/assets $(OUTPUTDIR)/assets
 	cd www && yarn install
+	touch ./www/pages/index.tsx  # Refresh the yarn dev server

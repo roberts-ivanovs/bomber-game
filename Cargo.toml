@@ -1,13 +1,13 @@
-[package]
-name = "bomber"
-version = "0.1.0"
-edition = "2018"
+[workspace]
+members = ["client", "server", "shared"]
+resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev.package."*"]
+opt-level = 3
 
-[dependencies]
-macroquad = "0.3"
-nanoserde = "0.1"
-macroquad-tiled = "0.1"
-macroquad-platformer = "0.1"
-macroquad-particles = {version = "0.1", features = ["nanoserde"] }
+[profile.release]
+lto = true
+codegen-units = 1
+incremental = false
+
+[patch.crates-io]
