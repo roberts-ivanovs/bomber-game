@@ -9,6 +9,7 @@ use crate::gui::Scene;
 use crate::Resources;
 
 use self::consts::TILE_SIZE;
+use self::ws::WebSocketClient;
 
 mod bomb;
 mod camera;
@@ -17,6 +18,8 @@ mod level_bg;
 mod walls;
 mod destroyable;
 mod player;
+mod remote_player;
+pub mod ws;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 100.0;
@@ -59,6 +62,11 @@ pub async fn main_game() -> Scene {
     }
 
     scene::add_node(walls::Walls::new());
+
+    let ws_client = WebSocketClient::new().await;
+    scene::add_node(ws_client);
+
+    scene::add_node(level_bg::LevelBg::new());
 
     scene::add_node(destroyable::Destroyable::new());
 

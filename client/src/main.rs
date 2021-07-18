@@ -1,3 +1,4 @@
+use log::Level;
 use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad_platformer::World as CollisionWorld;
@@ -8,6 +9,8 @@ mod nodes;
 mod js_interop;
 
 use gui::Scene;
+use nodes::ws::WebSocketClient;
+use sapp_console_log::{init, init_with_level};
 
 struct ExplosionTextures {
     deg_90: Texture2D,
@@ -117,6 +120,7 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
+    init_with_level(Level::Debug).unwrap();
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
