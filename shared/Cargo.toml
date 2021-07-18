@@ -10,3 +10,6 @@ publish = false
 bytes = "1.0"
 nanoserde = "0.1"
 bitfield = "0.13.2"
+rapier2d = { version = "0.10", features = [ "enhanced-determinism" ] }
+nalgebra = { version = "0.28", features = ["convert-glam014"] }
+resources = "1.1"
