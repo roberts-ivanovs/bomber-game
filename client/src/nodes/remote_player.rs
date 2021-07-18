@@ -1,3 +1,4 @@
+use bomber_shared::messages::message::PlayerID;
 use macroquad::{
     experimental::{
         coroutines::{start_coroutine, wait_seconds},
@@ -10,24 +11,21 @@ use super::player::Bomber;
 
 pub struct RemotePlayer {
     pub username: String,
-    pub id: String,
+    pub id: PlayerID,
     bomber: Bomber,
 
     pub dead: bool,
     pub ready: bool,
-    pos_delta: Vec2,
     last_move_time: f64,
 }
 
 impl RemotePlayer {
-    pub fn new(username: &str, id: &str) -> RemotePlayer {
-        let pos = vec2(100., 105.);
-
+    pub fn new(username: String, id: PlayerID) -> RemotePlayer {
+        let empty_vec = vec2(0., 0.);
         RemotePlayer {
-            bomber: Bomber::new(pos),
-            username: username.to_string(),
-            id: id.to_string(),
-            pos_delta: vec2(0.0, 0.0),
+            id,
+            bomber: Bomber::new(empty_vec),
+            username,
             last_move_time: 0.0,
             ready: false,
             dead: false,
@@ -36,7 +34,6 @@ impl RemotePlayer {
 
     pub fn set_pos(&mut self, pos: Vec2) {
         self.last_move_time = get_time();
-        self.pos_delta = pos - *self.bomber.pos();
         self.bomber.set_pos(pos);
     }
 
@@ -47,6 +44,8 @@ impl RemotePlayer {
 }
 impl scene::Node for RemotePlayer {
     fn draw(mut node: RefMut<Self>) {
+
+        // Username
         draw_text_ex(
             &node.username,
             node.bomber.pos().x - 1.,

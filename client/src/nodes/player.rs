@@ -36,7 +36,6 @@ pub struct Input {
 pub struct Bomber {
     pub collider: Actor,
     speed: Vec2,
-    pos: Vec2,
     input: Input,
     current_bomb_type: BombType,
 }
@@ -46,7 +45,6 @@ impl Bomber {
         let mut resources = storage::get_mut::<Resources>();
         Self {
             collider: resources.collision_world.add_actor(spawner_pos, 32, 32),
-            pos: spawner_pos,
             input: Default::default(),
             speed: vec2(0., 0.),
             current_bomb_type: BombType::Basic,
@@ -70,19 +68,20 @@ impl Bomber {
     }
 
     /// Get a reference to the bomber's pos.
-    pub fn pos(&self) -> &Vec2 {
-        &self.pos
+    pub fn pos(&self) -> Vec2 {
+        let resources = storage::get::<Resources>();
+        resources.collision_world.actor_pos(self.collider)
     }
 
     /// Set the bomber's pos.
     pub fn set_pos(&mut self, pos: Vec2) {
-        self.pos = pos;
+        let mut resources = storage::get_mut::<Resources>();
+        resources.collision_world.set_actor_position(self.collider, pos);
     }
 }
 
 pub struct Player {
     pub bomber: Bomber,
-    pos: Vec2,
     bomb_place_time: f64,
     input: Input,
     state_machine: StateMachine<RefMut<Player>>,
@@ -101,19 +100,15 @@ impl Player {
         Player {
             bomber: Bomber::new(spawner_pos),
             bomb_place_time: 0.,
-            pos: spawner_pos,
             state_machine,
             input: Default::default(),
         }
     }
 
     pub fn pos(&self) -> Vec2 {
-        self.pos
+        self.bomber.pos()
     }
 
-    pub fn set_pos(&mut self, pos: Vec2) {
-        self.pos = pos
-    }
 
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
         let node = &mut **node;
@@ -161,7 +156,7 @@ impl scene::Node for Player {
             loop {
                 wait_seconds(1.).await;
                 if let Some(this) = scene::try_get_node(handle) {
-                    FromJS::console_log(&format!("player.pos\t: {:?}", this.bomber.pos));
+                    log::trace!("player.pos\t: {:?}", this.bomber.pos());
                 }
             }
         });
@@ -188,8 +183,6 @@ impl scene::Node for Player {
             resources
                 .collision_world
                 .move_v(bomber.collider, bomber.speed.y * get_frame_time());
-
-            bomber.pos = resources.collision_world.actor_pos(bomber.collider);
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }

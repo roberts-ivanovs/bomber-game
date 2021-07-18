@@ -5,6 +5,7 @@ use std::sync::{
     Arc,
 };
 
+use bomber_shared::messages::{append_user_id, message};
 use futures::{FutureExt, StreamExt};
 use tokio::sync::{mpsc, RwLock};
 use tokio_stream::wrappers::UnboundedReceiverStream;
@@ -87,13 +88,18 @@ async fn user_connected(ws: WebSocket, users: Users) {
 }
 
 async fn user_message(my_id: usize, msg: Message, users: &Users) {
-    println!("{:?}", &msg);
+    // println!("user_message: {:?}", &msg);
     // TODO Validate that the messages are not fake && are in correct format
 
     // New message from this user, send it to everyone else (except same uid)...
     for (&uid, tx) in users.read().await.iter() {
         if my_id != uid {
-            if let Err(_disconnected) = tx.send(Ok(msg.clone())) {
+            let deserialized_msg: message::MessagesClientTx =
+                nanoserde::DeBin::deserialize_bin(&msg.as_bytes()).expect("Cant parse message");
+            let deserialized_msg = append_user_id( uid, deserialized_msg);
+            let msg_to_send = Message::binary(deserialized_msg);
+            println!("Transmitting {:?} to {}", &msg_to_send, uid);
+            if let Err(_disconnected) = tx.send(Ok(msg_to_send)) {
                 // The tx is disconnected, our `user_disconnected` code
                 // should be happening in another task, nothing more to
                 // do here.

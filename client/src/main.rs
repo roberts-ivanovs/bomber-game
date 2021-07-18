@@ -1,3 +1,4 @@
+use log::Level;
 use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad_platformer::World as CollisionWorld;
@@ -9,7 +10,7 @@ mod js_interop;
 
 use gui::Scene;
 use nodes::ws::WebSocketClient;
-use sapp_console_log::init;
+use sapp_console_log::{init, init_with_level};
 
 struct ExplosionTextures {
     deg_90: Texture2D,
@@ -100,16 +101,13 @@ fn window_conf() -> Conf {
 }
 #[macroquad::main(window_conf)]
 async fn main() {
-    init().unwrap();
+    init_with_level(Level::Debug).unwrap();
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
 
     //let mut next_scene = gui::matchmaking_lobby().await;
     let mut next_scene = Scene::MainMenu;
-    let ws_client = WebSocketClient::new("1".to_owned()).await;
-
-    scene::add_node(ws_client);
     loop {
         match next_scene {
             Scene::MainMenu => {

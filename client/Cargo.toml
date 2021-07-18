@@ -12,10 +12,11 @@ authors = [
 [dependencies]
 bomber-shared = { path = "../shared" }
 macroquad = "0.3"
-nanoserde = "0.1"
+nanoserde = "0.1.28"
 macroquad-tiled = "0.1"
 macroquad-platformer = "0.1"
 macroquad-particles = { version = "0.1", features = ["nanoserde"] }
 sapp-jsutils = "0.1"
-quad-net = "0.1.1"
+quad-net = { git = "https://github.com/not-fl3/quad-net", commit="207da3a", features = ["nanoserde"] }
 sapp-console-log = "0.1.9"
+log = "0.4.14"

@@ -9,6 +9,7 @@ use crate::gui::Scene;
 use crate::Resources;
 
 use self::consts::TILE_SIZE;
+use self::ws::WebSocketClient;
 
 mod bomb;
 mod camera;
@@ -55,6 +56,9 @@ pub async fn main_game() -> Scene {
 
         next_frame().await;
     }
+
+    let ws_client = WebSocketClient::new().await;
+    scene::add_node(ws_client);
 
     scene::add_node(level_bg::LevelBg::new());
 
