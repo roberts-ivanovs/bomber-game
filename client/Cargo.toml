@@ -20,3 +20,5 @@ sapp-jsutils = "0.1"
 quad-net = { git = "https://github.com/not-fl3/quad-net", commit="207da3a", features = ["nanoserde"] }
 sapp-console-log = "0.1.9"
 log = "0.4.14"
+rapier2d = { version = "0.10", features = [ "wasm-bindgen" ] }
+nalgebra = { version = "0.28", features = ["convert-glam014"] }

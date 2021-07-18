@@ -10,12 +10,4 @@ lto = true
 codegen-units = 1
 incremental = false
 
-[dependencies]
-macroquad = "0.3"
-nanoserde = "0.1"
-macroquad-tiled = "0.1"
-macroquad-platformer = "0.1"
-macroquad-particles = { version = "0.1", features = ["nanoserde"] }
-sapp-jsutils = "0.1"
-rapier2d = { version = "0.10", features = [ "wasm-bindgen" ] }
-nalgebra = { version = "0.28", features = ["convert-glam014"] }
+[patch.crates-io]
