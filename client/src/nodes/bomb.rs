@@ -61,6 +61,8 @@ impl scene::Node for Bomb {
 
         let bomb_pos = vec2(node.pos.x, node.pos.y);
 
+        let bomb_type = node.bomb_type;
+
         start_coroutine(async move {
             let n = 25;
             for i in 0..n {
@@ -77,7 +79,7 @@ impl scene::Node for Bomb {
         start_coroutine(async move {
             wait_seconds(detonation / 1000.).await;
             // TODO kill all nearby players && host player
-            scene::add_node(super::fire::Fire::new(bomb_pos));
+            scene::add_node(super::fire::Fire::new(bomb_pos, bomb_type));
 
             if let Some(this) = scene::try_get_node(handle) {
                 this.delete();
