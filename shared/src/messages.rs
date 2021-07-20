@@ -22,15 +22,20 @@ pub mod message {
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub enum MessagesServerTx {
-        PlayerStateServer { client: PlayerState, player_id: PlayerID },
-        JoinLobbyServer { username: Username, player_id: PlayerID },
+        PlayerStateServer {
+            client: PlayerState,
+            player_id: PlayerID,
+        },
+        JoinLobbyServer {
+            username: Username,
+            player_id: PlayerID,
+        },
     }
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub struct PlayerState(pub [u8; 4]);
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub struct Username(pub String);
-
 
     impl Into<Vec<u8>> for MessagesServerTx {
         fn into(self) -> Vec<u8> {

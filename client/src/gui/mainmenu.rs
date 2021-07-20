@@ -13,7 +13,6 @@ use super::{GuiResources, Scene};
 
 pub async fn main_menu() -> Scene {
     loop {
-
         clear_background(BLACK);
 
         let resources = storage::get::<GuiResources>();
