@@ -39,6 +39,7 @@ async fn main() {
             Scene::Game => {
                 next_scene = nodes::main_game().await;
             }
+            Scene::Lobby => todo!(),
         }
     }
 }

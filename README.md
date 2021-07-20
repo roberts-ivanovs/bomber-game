@@ -15,3 +15,7 @@ Compile && start dev server:
 Only compile (will auto refresh the dev server if it's on):
 
     make
+
+Run the game server locally
+
+    cargo run -p server

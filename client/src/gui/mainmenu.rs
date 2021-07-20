@@ -11,6 +11,24 @@ use macroquad::{prelude::*, ui};
 
 use super::{GuiResources, Scene};
 
+const BUTTON_WIDTH: f32 = 250.0;
+const MAIN_MENU_BUTTON_COUNT: u32 = 16;
+const BUTTON_HEIGHT: f32 = 60.0;
+const BUTTON_Y_GAP: f32 = 15.0;
+
+fn draw_core_button(title: &str, offset: u32) -> widgets::Button {
+    // let label_size = root_ui().calc_size(title);
+    let label_pos = vec2(
+        screen_width() / MAIN_MENU_BUTTON_COUNT as f32,
+        (screen_height() / MAIN_MENU_BUTTON_COUNT as f32)
+            + ((BUTTON_HEIGHT + BUTTON_Y_GAP) * offset as f32)
+            + 200., // Extra padding from the top
+    );
+    widgets::Button::new(title)
+        .size(vec2(BUTTON_WIDTH, BUTTON_HEIGHT))
+        .position(vec2(label_pos.x as f32, label_pos.y as f32))
+}
+
 pub async fn main_menu() -> Scene {
     loop {
         clear_background(BLACK);
@@ -23,45 +41,28 @@ pub async fn main_menu() -> Scene {
         let label_pos = vec2(screen_width() / 2. - label_size.x / 2., 100.);
         root_ui().label(Some(label_pos), title);
 
-        let button_width = 300.0;
-
-        if widgets::Button::new("Quick game")
-            .size(vec2(button_width, 300.))
-            .position(vec2(
-                screen_width() / 2. - ((button_width + 10.) * 3.) / 2.,
-                label_pos.y + label_size.y + 50.,
-            ))
-            .ui(&mut *root_ui())
-        {
+        let title = "QUICK GAME";
+        if draw_core_button(title, 0).ui(&mut *root_ui()) {
             root_ui().pop_skin();
             return Scene::Game;
         }
 
-        if widgets::Button::new("    Credits")
-            .size(vec2(button_width, 300.))
-            .position(vec2(
-                screen_width() / 2. - button_width / 2.,
-                label_pos.y + label_size.y + 50.,
-            ))
-            .ui(&mut *root_ui())
-        {
+        let title = "CREATE A LOBBY";
+        if draw_core_button(title, 1).ui(&mut *root_ui()) {
             root_ui().pop_skin();
             return Scene::Credits;
         }
-        if widgets::Button::new("       Exit")
-            .size(vec2(button_width, 300.))
-            .position(vec2(
-                screen_width() / 2. + button_width / 2. + 10.,
-                label_pos.y + label_size.y + 50.,
-            ))
-            .ui(&mut *root_ui())
-        {
-            process::exit(0);
+
+        let title = "JOIN A LOBBY";
+        if draw_core_button(title, 2).ui(&mut *root_ui()) {
+            root_ui().pop_skin();
+            return Scene::Credits;
         }
 
-        if is_key_pressed(KeyCode::Escape) {
-            // Exit the game if we press ESCAPE while in mainmenu
-            process::exit(0);
+        let title = "CREDITS";
+        if draw_core_button(title, 3).ui(&mut *root_ui()) {
+            root_ui().pop_skin();
+            return Scene::Credits;
         }
 
         root_ui().pop_skin();

@@ -31,7 +31,7 @@ impl GuiResources {
                     None,
                 ))
                 .background_margin(RectOffset::new(8.0, 8.0, 12.0, 12.0))
-                .margin(RectOffset::new(8.0, 8.0, 110.0, 12.0))
+                .margin(RectOffset::new(0.0, 0.0, 0.0, 0.0))
                 .background_hovered(Image::from_file_with_format(
                     include_bytes!("../../assets/ui/button_hovered_background_2.png"),
                     None,
@@ -43,7 +43,7 @@ impl GuiResources {
                 .font(include_bytes!("../../assets/ui/MinimalPixel v2.ttf"))
                 .unwrap()
                 .text_color(Color::from_rgba(200, 200, 160, 255))
-                .font_size(45)
+                .font_size(20)
                 .build();
 
             Skin {
