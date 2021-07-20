@@ -1,115 +1,16 @@
-use log::Level;
 use macroquad::prelude::collections::storage;
 use macroquad::prelude::*;
 use macroquad_platformer::World as CollisionWorld;
 use macroquad_tiled as tiled;
+use rapier2d::prelude::*;
 
+mod constants;
 mod gui;
-mod nodes;
 mod js_interop;
+mod nodes;
+mod physics;
 
 use gui::Scene;
-use nodes::ws::WebSocketClient;
-use sapp_console_log::{init, init_with_level};
-
-struct ExplosionTextures {
-    deg_90: Texture2D,
-    fourway: Texture2D,
-    side: Texture2D,
-    tail: Texture2D,
-    threeway: Texture2D,
-    twoway: Texture2D,
-}
-
-struct MapSize {
-    w: u32,
-    h: u32,
-}
-
-impl MapSize {
-    pub fn new(w: u32, h: u32) -> Self {
-        MapSize {w, h}
-    }
-}
-
-struct Resources {
-    player: Texture2D,
-    tiled_map: tiled::Map,
-    tileset: Texture2D,
-    collision_world: CollisionWorld,
-    bomb: Texture2D,
-    fire: ExplosionTextures,
-    map_size: MapSize,
-}
-
-impl Resources {
-    async fn new() -> Result<Resources, macroquad::prelude::FileError> {
-        let bomb = load_texture("assets/tiles/bomb.png").await?;
-        bomb.set_filter(FilterMode::Nearest);
-
-        let expl_90deg = load_texture("assets/tiles/explosion/explosion-90deg.png").await?;
-        expl_90deg.set_filter(FilterMode::Nearest);
-
-        let expl_fourway = load_texture("assets/tiles/explosion/explosion-fourway.png").await?;
-        expl_fourway.set_filter(FilterMode::Nearest);
-
-        let expl_side = load_texture("assets/tiles/explosion/explosion-side.png").await?;
-        expl_side.set_filter(FilterMode::Nearest);
-
-        let expl_tail = load_texture("assets/tiles/explosion/explosion-tail.png").await?;
-        expl_tail.set_filter(FilterMode::Nearest);
-
-        let expl_threeway = load_texture("assets/tiles/explosion/explosion-threeway.png").await?;
-        expl_threeway.set_filter(FilterMode::Nearest);
-
-        let expl_twoway = load_texture("assets/tiles/explosion/explosion-twoway.png").await?;
-        expl_twoway.set_filter(FilterMode::Nearest);
-
-        let player = load_texture("assets/tiles/ronalds(32x32).png").await?;
-        player.set_filter(FilterMode::Nearest);
-
-        let tileset = load_texture("assets/tileset.png").await?;
-        tileset.set_filter(FilterMode::Nearest);
-
-        let tiled_map_json = load_string("assets/Tiled_BaseMap.json").await.unwrap();
-        let tiled_map = tiled::load_map(&tiled_map_json, &[("tileset.png", tileset)], &[]).unwrap();
-
-        let mut static_colliders = vec![];
-        for (_x, _y, tile) in tiled_map.tiles("walls", None) {
-            static_colliders.push(tile.is_some());
-        }
-        let mut collision_world = CollisionWorld::new();
-        collision_world.add_static_tiled_layer(
-            static_colliders,
-            32.,
-            32.,
-            tiled_map.raw_tiled_map.width as _,
-            1,
-        );
-
-        let map_size = MapSize::new(
-            tiled_map.raw_tiled_map.tilewidth * tiled_map.raw_tiled_map.width,
-            tiled_map.raw_tiled_map.tileheight * tiled_map.raw_tiled_map.height,
-        );
-
-        Ok(Resources {
-            tiled_map,
-            collision_world,
-            tileset,
-            bomb,
-            player,
-            fire: ExplosionTextures {
-                deg_90: expl_90deg,
-                fourway: expl_fourway,
-                side: expl_side,
-                tail: expl_tail,
-                threeway: expl_threeway,
-                twoway: expl_twoway,
-            },
-            map_size,
-        })
-    }
-}
 
 fn window_conf() -> Conf {
     Conf {
@@ -118,9 +19,9 @@ fn window_conf() -> Conf {
         ..Default::default()
     }
 }
+
 #[macroquad::main(window_conf)]
 async fn main() {
-    init_with_level(Level::Debug).unwrap();
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
