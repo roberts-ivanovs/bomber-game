@@ -2,6 +2,10 @@ use macroquad::prelude::*;
 use macroquad_platformer::*;
 use macroquad_tiled as tiled;
 
+use resources::Resources;
+
+use super::physics::init_resources;
+
 use macroquad::experimental::{collections::storage, coroutines::start_coroutine};
 
 use crate::gui::Scene;
@@ -11,12 +15,12 @@ use super::constants::consts;
 
 mod bomb;
 mod camera;
+mod destroyable;
 mod fire;
 mod level_bg;
-mod walls;
-mod destroyable;
 mod player;
 mod remote_player;
+mod walls;
 pub mod ws;
 
 fn convert_to_absolute(num: f32) -> f32 {
@@ -32,8 +36,7 @@ fn get_nearest_tile(loc: Vec2) -> Vec2 {
 
 pub async fn main_game() -> Scene {
     let resources_loading = start_coroutine(async move {
-        let resources = Resources::new().await.unwrap();
-        storage::store(resources);
+        storage::store(init_resources().await);
     });
 
     while resources_loading.is_done() == false {

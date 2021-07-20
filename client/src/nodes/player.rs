@@ -1,6 +1,6 @@
 use macroquad::prelude::*;
 
-use macroquad_platformer::Actor;
+use macroquad_platformer::{Actor, World};
 
 use macroquad::{
     audio::{self, play_sound_once},
@@ -18,13 +18,17 @@ use macroquad::experimental::{collections::storage, scene::RefMut};
 
 use super::{
     bomb::{self, BombType},
-    consts::RUN_SPEED,
-    consts::PLAYER_W,
     consts::PLAYER_H,
+    consts::PLAYER_W,
+    consts::RUN_SPEED,
     get_nearest_tile,
 };
 
-use crate::{js_interop::FromJS, Resources};
+use crate::physics::Textures;
+use macroquad_tiled::Map;
+use resources::Resources;
+
+use crate::js_interop::FromJS;
 
 #[derive(Default, Debug, Clone)]
 pub struct Input {
@@ -46,8 +50,11 @@ impl Bomber {
     pub fn new(spawner_pos: Vec2) -> Self {
         let mut resources = storage::get_mut::<Resources>();
 
+        // TODO doesn't exist???
+        let mut collision_world = resources.get_mut::<World>().unwrap();
+
         Self {
-            collider: resources.collision_world.add_actor(spawner_pos, PLAYER_W as i32, PLAYER_H as i32),
+            collider: collision_world.add_actor(spawner_pos, PLAYER_W as i32, PLAYER_H as i32),
             input: Default::default(),
             speed: vec2(0., 0.),
             current_bomb_type: BombType::Basic,
@@ -57,9 +64,12 @@ impl Bomber {
     pub fn draw(&mut self) {
         let resources = storage::get::<Resources>();
 
-        let pos = resources.collision_world.actor_pos(self.collider);
+        let mut collision_world = resources.get_mut::<World>().unwrap();
+        let textures = resources.get_mut::<Textures>().unwrap();
+
+        let pos = collision_world.actor_pos(self.collider);
         draw_texture_ex(
-            resources.player,
+            textures.player,
             pos.x,
             pos.y,
             WHITE,
@@ -73,13 +83,15 @@ impl Bomber {
     /// Get a reference to the bomber's pos.
     pub fn pos(&self) -> Vec2 {
         let resources = storage::get::<Resources>();
-        resources.collision_world.actor_pos(self.collider)
+        let mut collision_world = resources.get_mut::<World>().unwrap();
+        collision_world.actor_pos(self.collider)
     }
 
     /// Set the bomber's pos.
     pub fn set_pos(&mut self, pos: Vec2) {
         let mut resources = storage::get_mut::<Resources>();
-        resources.collision_world.set_actor_position(self.collider, pos);
+        let mut collision_world = resources.get_mut::<World>().unwrap();
+        collision_world.set_actor_position(self.collider, pos);
     }
 }
 
@@ -112,7 +124,6 @@ impl Player {
         self.bomber.pos()
     }
 
-
     fn update_normal(node: &mut RefMut<Player>, _dt: f32) {
         let node = &mut **node;
         let bomber = &mut node.bomber;
@@ -144,7 +155,8 @@ impl Player {
 
     fn place_bomb(&mut self) {
         let resources = storage::get::<Resources>();
-        let pos = resources.collision_world.actor_pos(self.bomber.collider);
+        let mut collision_world = resources.get_mut::<World>().unwrap();
+        let pos = collision_world.actor_pos(self.bomber.collider);
         scene::add_node(bomb::Bomb::new(get_nearest_tile(pos)));
 
         self.bomb_place_time = get_time();
@@ -176,16 +188,13 @@ impl scene::Node for Player {
         node.input.place_bomb = is_key_down(KeyCode::Space);
 
         {
+            let resources = storage::get::<Resources>();
             let node = &mut *node;
             let bomber = &mut node.bomber;
+            let mut collision_world = resources.get_mut::<World>().unwrap();
 
-            let mut resources = storage::get_mut::<Resources>();
-            resources
-                .collision_world
-                .move_h(bomber.collider, bomber.speed.x * get_frame_time());
-            resources
-                .collision_world
-                .move_v(bomber.collider, bomber.speed.y * get_frame_time());
+            collision_world.move_h(bomber.collider, bomber.speed.x * get_frame_time());
+            collision_world.move_v(bomber.collider, bomber.speed.y * get_frame_time());
         }
         StateMachine::update_detached(&mut node, |node| &mut node.state_machine);
     }

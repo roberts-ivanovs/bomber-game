@@ -6,7 +6,9 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::Resources;
+use crate::physics::MapSize;
+use crate::physics::Textures;
+use resources::Resources;
 
 pub struct Destroyable {}
 
@@ -20,9 +22,14 @@ impl scene::Node for Destroyable {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get::<Resources>();
 
-        resources
-            .tiled_map
-            .draw_tiles("destroyable_walls", Rect::new(0., 0., resources.map_size.w as f32, resources.map_size.h as f32), None);
+        let textures = resources.get_mut::<Textures>().unwrap();
+        let map_size = resources.get_mut::<MapSize>().unwrap();
+
+        textures.tiled_map.draw_tiles(
+            "destroyable_walls",
+            Rect::new(0., 0., map_size.w as f32, map_size.h as f32),
+            None,
+        );
 
         // resources.tiled_map.
     }

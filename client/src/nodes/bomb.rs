@@ -16,7 +16,9 @@ use macroquad::{
     ui::{self, hash},
 };
 
-use crate::Resources;
+use crate::physics::Textures;
+use resources::Resources;
+
 use macroquad::experimental::{collections::storage, scene::RefMut};
 
 use super::player::{Bomber, Player};
@@ -87,10 +89,12 @@ impl scene::Node for Bomb {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get::<Resources>();
 
+        let textures = resources.get::<Textures>().unwrap();
+
         match node.bomb_type {
             BombType::Basic => {
                 draw_texture_ex(
-                    resources.bomb,
+                    textures.bomb,
                     node.pos.x - (32.0 * node.visual_scale - 32.) / 2.,
                     node.pos.y - (32.0 * node.visual_scale - 32.) / 2.,
                     color::WHITE,

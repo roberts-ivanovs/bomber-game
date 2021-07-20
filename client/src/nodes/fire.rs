@@ -8,7 +8,8 @@ use macroquad::{
     prelude::*,
 };
 
-use crate::Resources;
+use crate::physics::Textures;
+use resources::Resources;
 
 pub struct Fire {
     pos: Vec2,
@@ -27,8 +28,10 @@ impl Fire {
 impl scene::Node for Fire {
     fn draw(node: RefMut<Self>) {
         let resources = storage::get::<Resources>();
+        let mut texture = resources.get_mut::<Textures>().unwrap();
+
         draw_texture_ex(
-            resources.fire.fourway,
+            texture.fire.fourway,
             node.pos.x,
             node.pos.y,
             color::WHITE,
