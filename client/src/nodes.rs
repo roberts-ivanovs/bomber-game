@@ -54,9 +54,6 @@ pub async fn main_game() -> Scene {
 
     scene::add_node(walls::Walls::new());
 
-    let ws_client = WebSocketClient::new().await;
-    scene::add_node(ws_client);
-
     scene::add_node(level_bg::LevelBg::new());
 
     scene::add_node(destroyable::Destroyable::new());
@@ -64,6 +61,9 @@ pub async fn main_game() -> Scene {
     scene::add_node(player::Player::new(vec2(32., 32.)));
 
     scene::add_node(camera::Camera::new(352.0));
+
+    let ws_client = WebSocketClient::new().await;
+    scene::add_node(ws_client);
 
     loop {
         clear_background(WHITE);
