@@ -6,10 +6,8 @@ use macroquad::experimental::{collections::storage, coroutines::start_coroutine}
 
 use crate::gui::Scene;
 
-use crate::Resources;
-
-use self::consts::TILE_SIZE;
 use self::ws::WebSocketClient;
+use super::constants::consts;
 
 mod bomb;
 mod camera;
@@ -21,21 +19,14 @@ mod player;
 mod remote_player;
 pub mod ws;
 
-pub mod consts {
-    pub const RUN_SPEED: f32 = 100.0;
-    pub const TILE_SIZE: f32 = 32.;
-    pub const PLAYER_W: f32 = 25.;
-    pub const PLAYER_H: f32 = 25.;
-}
-
 fn convert_to_absolute(num: f32) -> f32 {
     return num * consts::TILE_SIZE;
 }
 
 fn get_nearest_tile(loc: Vec2) -> Vec2 {
     vec2(
-        (loc.x / TILE_SIZE).round() * TILE_SIZE,
-        (loc.y / TILE_SIZE).round() * TILE_SIZE,
+        (loc.x / consts::TILE_SIZE).round() * consts::TILE_SIZE,
+        (loc.y / consts::TILE_SIZE).round() * consts::TILE_SIZE,
     )
 }
 
