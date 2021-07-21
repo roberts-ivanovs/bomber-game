@@ -9,7 +9,7 @@ mod js_interop;
 mod nodes;
 
 use gui::Scene;
-use nodes::ws::WebSocketClient;
+use nodes::{api::ApiController, ws::WebSocketClient};
 use sapp_console_log::{init, init_with_level};
 
 struct ExplosionTextures {
@@ -106,6 +106,9 @@ async fn main() {
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
 
+    let api = ApiController::new().await;
+    scene::add_node(api);
+
     //let mut next_scene = gui::matchmaking_lobby().await;
     let mut next_scene = Scene::MainMenu;
     loop {
@@ -119,7 +122,11 @@ async fn main() {
             Scene::Game => {
                 next_scene = nodes::main_game().await;
             }
-            Scene::Lobby => todo!(),
+            Scene::Lobby(lobby_type) => {
+                next_scene = gui::lobby(lobby_type).await;
+            },
+            // Scene::Lobby   => {
+            // }
         }
     }
 }

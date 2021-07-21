@@ -15,21 +15,24 @@ pub mod message {
     pub type PlayerID = usize;
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
-    pub enum MessagesClientTx {
-        PlayerStateClient(PlayerState),
-        JoinLobbyClient { username: Username },
+    pub enum MessagesTx {
+        PlayerState(PlayerState),
+        JoinLobby { username: Username },
+        Disconnect,
     }
 
+
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
-    pub enum MessagesServerTx {
-        PlayerStateServer {
+    pub enum MessagesRx {
+        PlayerState {
             client: PlayerState,
             player_id: PlayerID,
         },
-        JoinLobbyServer {
+        JoinLobby {
             username: Username,
             player_id: PlayerID,
         },
+        Disconnect { player_id: PlayerID }
     }
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
@@ -37,7 +40,7 @@ pub mod message {
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub struct Username(pub String);
 
-    impl Into<Vec<u8>> for MessagesServerTx {
+    impl Into<Vec<u8>> for MessagesRx {
         fn into(self) -> Vec<u8> {
             self.serialize_bin()
         }
@@ -46,17 +49,20 @@ pub mod message {
 
 pub fn append_user_id(
     player_id: message::PlayerID,
-    client_message: message::MessagesClientTx,
-) -> message::MessagesServerTx {
+    client_message: message::MessagesTx,
+) -> impl Into<Vec<u8>> {
     match client_message {
-        message::MessagesClientTx::PlayerStateClient(client) => {
-            message::MessagesServerTx::PlayerStateServer { client, player_id }
-        }
-        message::MessagesClientTx::JoinLobbyClient { username } => {
-            message::MessagesServerTx::JoinLobbyServer {
-                username,
+        message::MessagesTx::PlayerState(client) => {
+            message::MessagesRx::PlayerState {
+                client,
                 player_id,
             }
-        }
+        },
+        message::MessagesTx::JoinLobby { username } => {
+            message::MessagesRx::JoinLobby {player_id, username}
+        },
+        message::MessagesTx::Disconnect => {
+            message::MessagesRx::Disconnect { player_id }
+        },
     }
 }

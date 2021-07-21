@@ -9,7 +9,7 @@ use macroquad::{
 };
 use macroquad::{prelude::*, ui};
 
-use super::{GuiResources, Scene};
+use super::{GuiResources, LobbyType, Scene};
 
 const BUTTON_WIDTH: f32 = 250.0;
 const MAIN_MENU_BUTTON_COUNT: u32 = 16;
@@ -50,13 +50,13 @@ pub async fn main_menu() -> Scene {
         let title = "CREATE A LOBBY";
         if draw_core_button(title, 1).ui(&mut *root_ui()) {
             root_ui().pop_skin();
-            return Scene::Credits;
+            return Scene::Lobby(LobbyType::Owner);
         }
 
         let title = "JOIN A LOBBY";
         if draw_core_button(title, 2).ui(&mut *root_ui()) {
             root_ui().pop_skin();
-            return Scene::Credits;
+            return Scene::Lobby(LobbyType::Guest);
         }
 
         let title = "CREDITS";

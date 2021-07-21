@@ -98,7 +98,6 @@ async fn user_message(my_id: usize, msg: Message, users: &Users) {
                 nanoserde::DeBin::deserialize_bin(&msg.as_bytes()).expect("Cant parse message");
             let deserialized_msg = append_user_id(uid, deserialized_msg);
             let msg_to_send = Message::binary(deserialized_msg);
-            println!("Transmitting {:?} to {}", &msg_to_send, uid);
             if let Err(_disconnected) = tx.send(Ok(msg_to_send)) {
                 // The tx is disconnected, our `user_disconnected` code
                 // should be happening in another task, nothing more to

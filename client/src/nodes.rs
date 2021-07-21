@@ -18,14 +18,11 @@ mod level_bg;
 mod player;
 mod remote_player;
 pub mod ws;
+pub mod api;
 
 pub mod consts {
     pub const RUN_SPEED: f32 = 100.0;
     pub const TILE_SIZE: f32 = 32.;
-}
-
-fn convert_to_absolute(num: f32) -> f32 {
-    return num * consts::TILE_SIZE;
 }
 
 fn get_nearest_tile(loc: Vec2) -> Vec2 {
@@ -57,20 +54,9 @@ pub async fn main_game() -> Scene {
         next_frame().await;
     }
 
-    let ws_client = WebSocketClient::new().await;
-    scene::add_node(ws_client);
-
     scene::add_node(level_bg::LevelBg::new());
-
-    let player = scene::add_node(player::Player::new(vec2(32., 32.)));
-    // scene::add_node(bomb::Bomb::new(vec2(32., 32.), player));
-
-    let resources = storage::get::<Resources>();
-    let w = resources.tiled_map.raw_tiled_map.tilewidth * resources.tiled_map.raw_tiled_map.width;
-    let h = resources.tiled_map.raw_tiled_map.tileheight * resources.tiled_map.raw_tiled_map.height;
-    drop(resources);
-
-    let camera = scene::add_node(camera::Camera::new(352.0));
+    scene::add_node(player::Player::new(vec2(32., 32.)));
+    scene::add_node(camera::Camera::new(352.0));
 
     loop {
         clear_background(WHITE);
@@ -80,6 +66,7 @@ pub async fn main_game() -> Scene {
             break;
         }
     }
+    scene::clear();
     Scene::MainMenu
 }
 
