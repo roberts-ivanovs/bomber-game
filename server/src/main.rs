@@ -26,5 +26,5 @@ async fn main() {
         .unwrap_or_else(|| SocketAddr::from_str("127.0.0.1:9000").unwrap());
     // ---------------------------------- //
     // Run the server
-    startup::run(addr).await;
+    startup::run(addr).await.await;
 }

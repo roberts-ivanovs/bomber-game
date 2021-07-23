@@ -5,11 +5,11 @@ use warp::{hyper::StatusCode, Filter};
 use crate::ws;
 
 /// Define routes for the base application
-pub fn api() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+pub async fn api() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     (warp::path("health_check")
         .and(warp::get())
         .and_then(health_check))
-    .or(ws::routes())
+    .or(ws::routes().await)
 }
 
 /// Simple health check handler to make sure that the server is indeed up and

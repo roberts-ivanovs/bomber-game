@@ -181,6 +181,7 @@ dependencies = [
  "bitfield",
  "bytes 1.0.1",
  "nanoserde",
+ "uuid",
 ]
 
 [[package]]

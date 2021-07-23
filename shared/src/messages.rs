@@ -1,3 +1,4 @@
+
 // ^ 21-31 leftover bits
 bitfield::bitfield! {
     pub struct PlayerStateBits([u8]);
@@ -10,29 +11,39 @@ bitfield::bitfield! {
 
 pub mod message {
     use nanoserde::{DeBin, SerBin};
+    use uuid::{Bytes, Uuid};
     use std::fmt::Debug;
 
-    pub type PlayerID = usize;
+    pub type PlayerID = Bytes;
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub enum MessagesTx {
         PlayerState(PlayerState),
-        JoinLobby { username: Username },
+        JoinLobby { username: Username, lobby_id: Bytes },
+        CreateLobby,
         Disconnect,
     }
 
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub enum MessagesRx {
+        // Sent by other players
         PlayerState {
             client: PlayerState,
             player_id: PlayerID,
         },
-        JoinLobby {
+        SomeElseJoinedLobby {
             username: Username,
             player_id: PlayerID,
         },
-        Disconnect { player_id: PlayerID }
+        Disconnect { player_id: PlayerID },
+
+        // Sent by the server
+        NewLobbyId { lobby_id: Bytes },
+        Success,
+
+        // Nothing to do
+        Noop,
     }
 
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
@@ -58,11 +69,10 @@ pub fn append_user_id(
                 player_id,
             }
         },
-        message::MessagesTx::JoinLobby { username } => {
-            message::MessagesRx::JoinLobby {player_id, username}
-        },
         message::MessagesTx::Disconnect => {
             message::MessagesRx::Disconnect { player_id }
         },
+        message::MessagesTx::CreateLobby => message::MessagesRx::Noop,
+        message::MessagesTx::JoinLobby { username: _, lobby_id: _ } => message::MessagesRx::Noop,
     }
 }

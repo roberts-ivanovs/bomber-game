@@ -11,11 +11,10 @@ pub async fn lobby(lobby_type: LobbyType) -> Scene {
 
     match lobby_type {
         LobbyType::Owner => {
-            // 1. Generate a new uuid
+            // 1. Ask for a new lobby
             // 2. Create a new lobby
         },
         LobbyType::Guest => {
-
             // 1. prompt - enter ID
             // 2. join lobby --> success: continue, not success: back to main menu ?
         },
