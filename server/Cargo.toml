@@ -10,6 +10,16 @@ bomber-shared = { path = "../shared" }
 pretty_env_logger = "0.4"
 futures = "0.3.15"
 nanoserde = "0.1.28"
+tiny-tokio-actor = "0.2"
+async-trait = "0.1.50"
+log = "0.4.14"
+dotenv = "0.15.0"
+env_logger = "0.9.0"
+uuid = { version = "0.8", features = ["v4", "serde"] }
+serde = "1.0"
+serde_json = "1.0"
+thiserror = "1"
+serde_derive = "1"
 
 [dependencies.tokio-stream]
 version = "0.1.1"
@@ -20,4 +30,5 @@ version = "1"
 features = ["full"]
 
 [dependencies.warp]
+version = "0.3.1"
 features = ["websocket"]
