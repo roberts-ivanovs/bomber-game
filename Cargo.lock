@@ -179,6 +179,7 @@ name = "bomber"
 version = "0.1.0"
 dependencies = [
  "bomber-shared",
+ "lazy_static",
  "log",
  "macroquad",
  "macroquad-particles",

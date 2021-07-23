@@ -32,24 +32,6 @@ const DIRECTIONS: [(u8, f32, f32); 4] = [
     (0b00010000u8, TILE_SIZE, 0.),
 ];
 
-// pub struct Direction {
-//     up: Vec2,
-//     left: Vec2,
-//     down: Vec2,
-//     right: Vec2,
-// }
-
-// impl Direction {
-//     pub fn new(pos: Vec2) -> Self {
-//         Self {
-//             up: vec2(0., TILE_SIZE),
-//             left: vec2(-TILE_SIZE, 0.),
-//             down: vec2(0., -TILE_SIZE),
-//             right: vec2(TILE_SIZE, 0.),
-//         }
-//     }
-// }
-
 pub struct Fire {
     pos: Vec2,
     delete_in_seconds: f32,
@@ -127,13 +109,73 @@ impl Fire {
                 },
             ),
 
-            _ => {
-                log::debug!("{}", middle_facing);
-                (resources.fire.fourway, DrawTextureParams::default())
-            }
+            _ => (resources.fire.fourway, DrawTextureParams::default()),
         };
 
         draw_texture_ex(texture, self.pos.x, self.pos.y, color::WHITE, params)
+    }
+
+    fn draw_side(&self, x: &f32, y: &f32, length: i32) {
+        let resources = storage::get::<Resources>();
+
+        let params = if *x == DIRECTIONS[0].1 && *y == DIRECTIONS[0].2
+            || *x == DIRECTIONS[2].1 && *y == DIRECTIONS[2].2 && length != 0
+        {
+            DrawTextureParams {
+                rotation: PI / 2.,
+                ..Default::default()
+            }
+        } else {
+            DrawTextureParams::default()
+        };
+
+        draw_texture_ex(
+            resources.fire.side,
+            self.pos.x + x * length as f32,
+            self.pos.y + y * length as f32,
+            color::WHITE,
+            params,
+        )
+    }
+
+    fn draw_tail(&self, x: &f32, y: &f32, max_length: i32) {
+        let resources = storage::get::<Resources>();
+
+        let params = if *x == DIRECTIONS[0].1 && *y == DIRECTIONS[0].2 {
+            DrawTextureParams {
+                rotation: PI / 2.,
+                ..Default::default()
+            }
+        } else if *x == DIRECTIONS[2].1 && *y == DIRECTIONS[2].2 {
+            DrawTextureParams {
+                rotation: -PI / 2.,
+                ..Default::default()
+            }
+        } else if *x == DIRECTIONS[1].1 && *y == DIRECTIONS[1].2 {
+            DrawTextureParams {
+                rotation: PI,
+                ..Default::default()
+            }
+        } else {
+            DrawTextureParams::default()
+        };
+
+        draw_texture_ex(
+            resources.fire.tail,
+            self.pos.x + x * max_length as f32,
+            self.pos.y + y * max_length as f32,
+            color::WHITE,
+            params,
+        )
+    }
+
+    fn is_colliding_in_dir(&self, x: f32, y: f32) -> bool {
+        let resources = storage::get::<Resources>();
+
+        (resources
+            .collision_world
+            .collide_solids(vec2(self.pos.x + x, self.pos.y + y), 1, 1))
+            == true
     }
 }
 
@@ -144,36 +186,32 @@ impl scene::Node for Fire {
         let mut middle_facing = 0b0000000u8;
 
         for (i, (mask, x, y)) in DIRECTIONS.iter().enumerate() {
-            // log::debug!("{} {}", dir, i);
-
-            if (resources
-                .collision_world
-                .collide_solids(node.pos + vec2(*x, *y), 1, 1))
-                == false
-            {
+            if !node.is_colliding_in_dir(*x, *y) {
                 middle_facing = mask | middle_facing;
 
-                match node.bomb_type {
-                    BombType::Basic => draw_texture_ex(
-                        resources.fire.side,
-                        node.pos.x + *x,
-                        node.pos.y + *y,
-                        color::WHITE,
-                        DrawTextureParams::default(),
-                    ),
+                let max_length = match node.bomb_type {
+                    BombType::Basic => 1,
+                };
+
+                for i in 1..max_length {
+                    if !node.is_colliding_in_dir(x * i as f32, y * i as f32) {
+                        node.draw_side(x, y, i);
+                    }
+                }
+
+                if !node.is_colliding_in_dir(*x * max_length as f32, *y * max_length as f32) {
+                    node.draw_tail(x, y, max_length);
                 }
             }
         }
 
         node.draw_middle(middle_facing);
+    }
 
-        let mut middle_texture = resources.fire.fourway;
-
-        fn update(mut node: RefMut<Fire>) {
-            node.delete_in_seconds -= get_frame_time();
-            if node.delete_in_seconds <= 0. {
-                node.delete();
-            }
+    fn update(mut node: RefMut<Fire>) {
+        node.delete_in_seconds -= get_frame_time();
+        if node.delete_in_seconds <= 0. {
+            node.delete();
         }
     }
 }
