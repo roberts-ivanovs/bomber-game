@@ -13,11 +13,11 @@ impl SystemEvent for ServerEvent {}
 
 
 #[derive(Clone, Debug)]
-pub struct Transmission(pub Uuid, pub messages::message::MessagesTx);
+pub struct Transmission(pub messages::message::MessagesTx);
 
 
 impl Message for Transmission {
-    type Response = Option<ActorPath>;
+    type Response = ();
 }
 
 #[derive(Clone, Debug)]

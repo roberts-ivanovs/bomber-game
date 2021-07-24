@@ -2,13 +2,14 @@ use std::{collections::HashMap, fmt::format, net::SocketAddr};
 
 use async_trait::async_trait;
 use bomber_shared::messages::message;
-use futures::StreamExt;
+use futures::{stream::SplitStream, StreamExt};
 use tiny_tokio_actor::{
-    Actor, ActorContext, ActorPath, ActorSystem, Handler, Message, SystemEvent,
+    Actor, ActorContext, ActorPath, ActorRef, ActorSystem, Handler, Message, SystemEvent,
 };
 use tokio::{
     sync::mpsc::{self, UnboundedReceiver, UnboundedSender},
     task,
+    time::Instant,
 };
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use uuid::Uuid;
@@ -17,34 +18,71 @@ use warp::ws::WebSocket;
 use super::messages::{Connect, ServerEvent, Transmission};
 
 #[derive(Clone)]
-pub struct LoungeActor {
-    pub users: HashMap<Uuid, UnboundedSender<warp::ws::Message>>,
+struct WsConn {
+    connection_id: Uuid,
+    hb: Instant,
+    websocket: UnboundedSender<warp::ws::Message>,
+    communication_actor: Option<ActorPath>,
 }
 
-impl LoungeActor {
-    pub fn new() -> Self {
-        Self {
-            users: HashMap::new(),
+impl WsConn {
+    async fn new(
+        websocket: UnboundedSender<warp::ws::Message>,
+        system: &ActorSystem<ServerEvent>,
+    ) -> ActorRef<ServerEvent, Self> {
+        let connection_id = Uuid::new_v4();
+        let hb = Instant::now();
+
+        let conn = Self {
+            connection_id,
+            hb,
+            websocket,
+            communication_actor: None,
+        };
+
+        let lounge_actor_path = system
+            .create_actor("lounge", conn)
+            .await
+            .expect("Could not create lounge actor!");
+        lounge_actor_path
+    }
+
+    async fn listen(
+        ws_rx: &mut SplitStream<WebSocket>,
+        actor_path: &mut ActorRef<ServerEvent, Self>,
+    ) {
+        // Loop over all websocket messages received over ws_rx
+        while let Some(result) = ws_rx.next().await {
+            // If no error, we tell the websocket message to the echo actor, otherwise break the loop
+            match result {
+                // Only accept binary messages
+                Ok(msg) if msg.is_binary() => {
+                    let deserialized_msg: message::MessagesTx =
+                        nanoserde::DeBin::deserialize_bin(&msg.as_bytes())
+                            .expect("Cant parse message");
+                    actor_path
+                        .tell(Transmission(deserialized_msg))
+                        .expect("Could not `ask` the actor...");
+                }
+                _ => {
+                    ::log::error!("error processing ws message!");
+                }
+            };
         }
     }
 }
-impl Actor<ServerEvent> for LoungeActor {}
 
 #[async_trait]
-impl Handler<ServerEvent, Connect> for LoungeActor {
-    async fn handle(&mut self, msg: Connect, ctx: &mut ActorContext<ServerEvent>) {
-        self.users.insert(msg.0, msg.1); // NOTE: unhandled Option here
-    }
-}
+impl Actor<ServerEvent> for WsConn {}
 
 #[async_trait]
-impl Handler<ServerEvent, Transmission> for LoungeActor {
+impl Handler<ServerEvent, Transmission> for WsConn {
     async fn handle(
         &mut self,
         msg: Transmission,
         ctx: &mut ActorContext<ServerEvent>,
-    ) -> Option<ActorPath> {
-        let return_actor = match msg.1 {
+    ) {
+        let return_actor = match msg.0 {
             message::MessagesTx::CreateLobby => {
                 let lobby_id = Uuid::new_v4();
                 let lobby = LobbyActor::new(lobby_id);
@@ -54,26 +92,32 @@ impl Handler<ServerEvent, Transmission> for LoungeActor {
                     .await
                     .expect("Impossible Uuid clash?");
 
-                self.users.get(&msg.0).map(|sender| {
-                    let message = warp::ws::Message::binary(message::MessagesRx::NewLobbyId {
-                        lobby_id: lobby_id.as_bytes().clone(),
-                    });
-                    // TODO if `send` is an error, then the connection is dropped.
-                    sender.send(message);
+                let message = warp::ws::Message::binary(message::MessagesRx::NewLobbyId {
+                    lobby_id: lobby_id.as_bytes().clone(),
                 });
+
+                // if `send` is an error, then the connection is dropped.
+                match self.websocket.send(message) {
+                    Ok(_) => todo!(),
+                    Err(e) =>  {
+                        // TODO Close off the actor connection here
+                        log::error!("Error sending message:{:?}", e);
+                    },
+                };
+
                 Some(lobby_actor.get_path().to_owned())
             }
             message::MessagesTx::JoinLobby { username, lobby_id } => {
                 // ctx.system.get_actor()
                 // TODO Left off
                 None
-            },
+            }
 
             // Impossible...
             message::MessagesTx::PlayerState(_) => None,
             message::MessagesTx::Disconnect => None,
         };
-        return return_actor;
+        self.communication_actor = return_actor;
     }
 }
 
@@ -94,11 +138,7 @@ impl LobbyActor {
 }
 
 // Starts a new echo actor on our actor system
-pub async fn handle_connection(
-    system: ActorSystem<ServerEvent>,
-    lounge_path: ActorPath,
-    websocket: WebSocket,
-) {
+pub async fn handle_connection(system: ActorSystem<ServerEvent>, websocket: WebSocket) {
     // Split out the websocket into incoming and outgoing
     let (user_ws_tx, mut user_ws_rx) = websocket.split();
 
@@ -107,40 +147,6 @@ pub async fn handle_connection(
     let receiver = UnboundedReceiverStream::new(receiver);
     task::spawn(receiver.map(Ok).forward(user_ws_tx));
 
-    let mut lounge = system
-        .get_actor::<LoungeActor>(&lounge_path)
-        .await
-        .expect("Could not get the lounge actor!");
-
-    let connection_id = Uuid::new_v4();
-    lounge
-        .tell(Connect(connection_id, sender))
-        .expect("Could not `tell` the lounge about a new connection");
-
-    // Loop over all websocket messages received over user_ws_rx
-    while let Some(result) = user_ws_rx.next().await {
-        // If no error, we tell the websocket message to the echo actor, otherwise break the loop
-        match result {
-            // Only accept binary messages
-            Ok(msg) if msg.is_binary() => {
-                let deserialized_msg: message::MessagesTx =
-                    nanoserde::DeBin::deserialize_bin(&msg.as_bytes()).expect("Cant parse message");
-
-                let resp = lounge
-                    .ask(Transmission(connection_id, deserialized_msg))
-                    .await
-                    .expect("Could not `ask` the actor...");
-                if let Some(new_path) = resp {
-                    lounge = system
-                        .get_actor(&new_path)
-                        .await
-                        .expect("Could not find actor");
-                }
-            }
-            _ => {
-                ::log::error!("error processing ws message from {}", &connection_id);
-                break;
-            }
-        };
-    }
+    let mut ws_conn = WsConn::new(sender, &system).await;
+    WsConn::listen(&mut user_ws_rx, &mut ws_conn).await;
 }
