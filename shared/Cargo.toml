@@ -11,3 +11,4 @@ bytes = "1.0"
 nanoserde = "0.1"
 bitfield = "0.13.2"
 uuid = { version = "0.8", features = ["v4", "serde"] }
+nserde-into-vec = { path = "../nserde-into-vec" }

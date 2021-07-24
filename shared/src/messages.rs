@@ -1,3 +1,4 @@
+use self::message::tx;
 
 // ^ 21-31 leftover bits
 bitfield::bitfield! {
@@ -11,68 +12,76 @@ bitfield::bitfield! {
 
 pub mod message {
     use nanoserde::{DeBin, SerBin};
-    use uuid::{Bytes, Uuid};
     use std::fmt::Debug;
+    use uuid::{Bytes, Uuid};
 
     pub type PlayerID = Bytes;
 
-    #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
-    pub enum MessagesTx {
-        PlayerState(PlayerState),
-        JoinLobby { username: Username, lobby_id: Bytes },
-        CreateLobby,
-        Disconnect,
+    pub mod tx {
+        use nanoserde::{DeBin, SerBin};
+        use uuid::Bytes;
+        use super::{PlayerState, Username};
+        use nserde_into_vec::IntoVecU8;
+
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesMainMenu {
+            JoinLobby { username: Username, lobby_id: Bytes },
+            CreateLobby,
+        }
+
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesLobby {
+            Disconnect,
+            StartGame,
+        }
+
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesGame {
+            PlayerState(PlayerState),
+        }
     }
 
 
-    #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
-    pub enum MessagesRx {
-        // Sent by other players
-        PlayerState {
-            client: PlayerState,
-            player_id: PlayerID,
-        },
-        SomeElseJoinedLobby {
-            username: Username,
-            player_id: PlayerID,
-        },
-        Disconnect { player_id: PlayerID },
+    pub mod rx {
+        use nanoserde::{DeBin, SerBin};
+        use uuid::Bytes;
+        use super::{PlayerID, PlayerState, Username};
+        use nserde_into_vec::IntoVecU8;
 
-        // Sent by the server
-        NewLobbyId { lobby_id: Bytes },
-        Success,
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesMainMenu {
+            NewLobbyId {
+                lobby_id: Bytes,
+            },
+        }
 
-        // Nothing to do
-        Noop,
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesLobby {
+            SomeElseJoinedLobby {
+                username: Username,
+                player_id: PlayerID,
+            },
+            Disconnect {
+                player_id: PlayerID,
+            },
+        }
+
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesGame {
+            // Sent by other players
+            PlayerState {
+                client: PlayerState,
+                player_id: PlayerID,
+            },
+        }
+
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum MessagesGameTx {
+            PlayerState(PlayerState),
+        }
     }
-
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub struct PlayerState(pub [u8; 4]);
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]
     pub struct Username(pub String);
-
-    impl Into<Vec<u8>> for MessagesRx {
-        fn into(self) -> Vec<u8> {
-            self.serialize_bin()
-        }
-    }
-}
-
-pub fn append_user_id(
-    player_id: message::PlayerID,
-    client_message: message::MessagesTx,
-) -> impl Into<Vec<u8>> {
-    match client_message {
-        message::MessagesTx::PlayerState(client) => {
-            message::MessagesRx::PlayerState {
-                client,
-                player_id,
-            }
-        },
-        message::MessagesTx::Disconnect => {
-            message::MessagesRx::Disconnect { player_id }
-        },
-        message::MessagesTx::CreateLobby => message::MessagesRx::Noop,
-        message::MessagesTx::JoinLobby { username: _, lobby_id: _ } => message::MessagesRx::Noop,
-    }
 }
