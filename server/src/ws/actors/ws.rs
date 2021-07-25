@@ -67,7 +67,7 @@ impl WsConn {
             // If no error, we tell the websocket message to the echo actor, otherwise break the loop
             match result {
                 // Only accept binary messages
-                Ok(msg) if msg.is_binary() => {
+                Ok(msg) => {
                     actor_path
                         .tell(Transmission(msg.into_bytes()))
                         .expect("Could not `ask` the actor...");
@@ -135,13 +135,11 @@ impl Handler<ServerEvent, Transmission> for WsConn {
 
                         // if `send` is an error, then the connection is dropped.
                         match self.websocket.send(message) {
-                            Ok(_) => {
-                                todo!()
-                            }
                             Err(e) => {
                                 // TODO Close off the actor connection here
                                 log::error!("Error sending message:{:?}", e);
                             }
+                            _ => {},
                         };
                         DeserializerType::Lobby(lobby_actor.get_path().to_owned())
                     }

@@ -4,7 +4,7 @@ use std::mem;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use bomber_shared::messages::message::{self, PlayerID, Username};
+use bomber_shared::messages::message::{self, LobbyID, PlayerID, Username};
 use bomber_shared::messages::PlayerStateBits;
 use macroquad::prelude::coroutines::{start_coroutine, wait_seconds};
 use macroquad::prelude::scene::{self, Handle, RefMut};
@@ -35,11 +35,13 @@ impl NetworkCache {
 }
 
 #[derive(Debug)]
-enum SocketCommMode {
+pub enum SocketCommMode {
     Lobby {
+        lobby_id: LobbyID,
         username: Username,
         remote_players: BTreeMap<PlayerID, Username>,
     },
+    WaitingForLobby,
     RealGame {
         remote_players: BTreeMap<PlayerID, Handle<RemotePlayer>>,
         network_cache: NetworkCache,
@@ -63,6 +65,18 @@ impl ApiController {
         let ws_client = WebSocketClient::new().await;
         let websocket = scene::add_node(ws_client);
         Self { communication_mode: SocketCommMode::None, websocket }
+    }
+
+    pub fn create_a_new_lobby(&mut self) {
+        let mut socket = scene::get_node(self.websocket);
+        let message = message::tx::MessagesMainMenu::CreateLobby;
+        self.communication_mode = SocketCommMode::WaitingForLobby;
+        socket.socket.send_bin(&message);
+    }
+
+    /// Get a reference to the api controller's communication mode.
+    pub fn communication_mode(&self) -> &SocketCommMode {
+        &self.communication_mode
     }
 }
 
@@ -115,7 +129,35 @@ impl scene::Node for ApiController {
                     }
                 }
             }
-            _ => {},
+            SocketCommMode::WaitingForLobby => {
+                let mut socket = scene::get_node(node.websocket);
+                // RX receive state
+                while let Some(msg) = socket.listen::<message::rx::MessagesMainMenu>() {
+                    match msg {
+                        message::rx::MessagesMainMenu::NewLobbyId { lobby_id } => {
+                            node.communication_mode = SocketCommMode::Lobby {
+                                lobby_id,
+                                remote_players: BTreeMap::new(),
+                                username: Username("Test".to_owned())
+                            }
+                        },
+                        message::rx::MessagesMainMenu::SuccessfulJoin => {
+
+                        },
+                        // message::rx::MessagesGame::PlayerState { client, player_id } => {
+                        //         remote_players.get_mut(&player_id).and_then(|h| {
+                        //             let mut other = scene::get_node(*h);
+                        //             let state = PlayerStateBits(client.0);
+                        //             other.set_pos(vec2(state.x() as f32, state.y() as f32));
+                        //             other.set_dead(state.dead());
+                        //             Some(h)
+                        //         });
+                        // },
+                    }
+                }
+
+            },
+            _ => {}
         }
         node.communication_mode = comm;
     }

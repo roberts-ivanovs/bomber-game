@@ -1,16 +1,14 @@
-use macroquad::{
-    experimental::collections::storage,
-    math::{vec2, Vec2},
-    ui::{hash, root_ui},
-    window::{next_frame, screen_height, screen_width},
-};
+use macroquad::{experimental::collections::storage, math::{vec2, Vec2}, prelude::scene, ui::{hash, root_ui}, window::{next_frame, screen_height, screen_width}};
+
+use crate::nodes::api::ApiController;
 
 use super::{GuiResources, LobbyType, Scene, WINDOW_HEIGHT, WINDOW_WIDTH};
 
 pub async fn lobby(lobby_type: LobbyType) -> Scene {
-
+    let mut api = scene::find_node_by_type::<ApiController>().unwrap();
     match lobby_type {
         LobbyType::Owner => {
+            api.create_a_new_lobby()
             // 1. Ask for a new lobby
             // 2. Create a new lobby
         },
@@ -22,6 +20,7 @@ pub async fn lobby(lobby_type: LobbyType) -> Scene {
 
 
     loop {
+        log::debug!("{:#?}",api.communication_mode());
         let resources = storage::get::<GuiResources>();
         root_ui().push_skin(&resources.login_skin);
 

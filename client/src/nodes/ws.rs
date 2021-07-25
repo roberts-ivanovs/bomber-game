@@ -4,12 +4,11 @@ use macroquad::prelude::scene;
 
 
 use quad_net::quad_socket::client::QuadSocket;
-use macroquad::window::next_frame;
 
 
 
 pub struct WebSocketClient {
-    socket: QuadSocket,
+    pub socket: QuadSocket,
 }
 
 impl WebSocketClient {
@@ -17,6 +16,7 @@ impl WebSocketClient {
         let socket = QuadSocket::connect("ws://127.0.0.1:9000/game").unwrap();
         #[cfg(target_arch = "wasm32")]
         {
+            use macroquad::window::next_frame;
             while socket.is_wasm_websocket_connected() == false {
                 next_frame().await;
             }
@@ -35,7 +35,9 @@ impl WebSocketClient {
     }
 
     pub fn listen<T: nanoserde::DeBin + std::fmt::Debug>(&mut self) -> Option<T> {
-        self.socket.try_recv_bin()
+        let bytes = self.socket.try_recv()?;
+        let data: Option<T> = nanoserde::DeBin::deserialize_bin(&bytes).unwrap_or(None);
+        data
     }
 
 }
