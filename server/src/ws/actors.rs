@@ -15,14 +15,21 @@ use tokio_stream::wrappers::UnboundedReceiverStream;
 use uuid::Uuid;
 use warp::ws::WebSocket;
 
-use super::messages::{Connect, ServerEvent, Transmission};
+use super::messages::{Connect, Disconnect, ServerEvent, Transmission};
+
+#[derive(Clone)]
+enum DeserializerType {
+    MainMenu,
+    Lobby(ActorPath),
+    Game(ActorPath),
+}
 
 #[derive(Clone)]
 struct WsConn {
     connection_id: Uuid,
     hb: Instant,
     websocket: UnboundedSender<warp::ws::Message>,
-    communication_actor: Option<ActorPath>,
+    comms: DeserializerType,
 }
 
 impl WsConn {
@@ -37,14 +44,14 @@ impl WsConn {
             connection_id,
             hb,
             websocket,
-            communication_actor: None,
+            comms: DeserializerType::MainMenu,
         };
 
-        let lounge_actor_path = system
-            .create_actor("lounge", conn)
+        let ws_actor = system
+            .create_actor(&connection_id.to_string(), conn)
             .await
             .expect("Could not create lounge actor!");
-        lounge_actor_path
+        ws_actor
     }
 
     async fn listen(
@@ -57,11 +64,8 @@ impl WsConn {
             match result {
                 // Only accept binary messages
                 Ok(msg) if msg.is_binary() => {
-                    let deserialized_msg: message::MessagesTx =
-                        nanoserde::DeBin::deserialize_bin(&msg.as_bytes())
-                            .expect("Cant parse message");
                     actor_path
-                        .tell(Transmission(deserialized_msg))
+                        .tell(Transmission(msg.into_bytes()))
                         .expect("Could not `ask` the actor...");
                 }
                 _ => {
@@ -77,47 +81,91 @@ impl Actor<ServerEvent> for WsConn {}
 
 #[async_trait]
 impl Handler<ServerEvent, Transmission> for WsConn {
-    async fn handle(
-        &mut self,
-        msg: Transmission,
-        ctx: &mut ActorContext<ServerEvent>,
-    ) {
-        let return_actor = match msg.0 {
-            message::MessagesTx::CreateLobby => {
-                let lobby_id = Uuid::new_v4();
-                let lobby = LobbyActor::new(lobby_id);
-                let lobby_actor = ctx
-                    .system
-                    .create_actor(&lobby_id.to_string(), lobby)
-                    .await
-                    .expect("Impossible Uuid clash?");
+    async fn handle(&mut self, msg: Transmission, ctx: &mut ActorContext<ServerEvent>) {
+        match &self.comms {
+            DeserializerType::MainMenu => {
+                let deserialized_msg: message::tx::MessagesMainMenu =
+                    nanoserde::DeBin::deserialize_bin(&msg.0).expect("Cant parse message");
 
-                let message = warp::ws::Message::binary(message::MessagesRx::NewLobbyId {
-                    lobby_id: lobby_id.as_bytes().clone(),
-                });
+                let return_actor = match deserialized_msg {
+                    message::tx::MessagesMainMenu::JoinLobby { username, lobby_id } => {
+                        let lobby_id = Uuid::from_bytes(lobby_id);
+                        let path: ActorPath = ActorPath::from("/user") / &lobby_id.to_string();
+                        let lobby_actor = ctx
+                            .system
+                            .get_actor::<LobbyActor>(&path)
+                            .await
+                            .map(|mut lob| {
+                                lob.tell(Connect(
+                                    self.connection_id,
+                                    self.websocket.clone(),
+                                    username,
+                                ))
+                                .map(|_| {
+                                    let message = warp::ws::Message::binary(
+                                        message::rx::MessagesMainMenu::SuccessfulJoin,
+                                    );
+                                    // if `send` is an error, then the connection is dropped.
+                                    self.websocket.send(message).unwrap();
+                                })
+                                .unwrap();
+                                lob
+                            })
+                            .unwrap();
+                        DeserializerType::Lobby(lobby_actor.get_path().to_owned())
+                    }
+                    message::tx::MessagesMainMenu::CreateLobby => {
+                        let lobby_id = Uuid::new_v4();
+                        let lobby = LobbyActor::new(lobby_id);
+                        let lobby_actor = ctx
+                            .system
+                            .create_actor(&lobby_id.to_string(), lobby)
+                            .await
+                            .expect("Impossible Uuid clash?");
 
-                // if `send` is an error, then the connection is dropped.
-                match self.websocket.send(message) {
-                    Ok(_) => todo!(),
-                    Err(e) =>  {
-                        // TODO Close off the actor connection here
-                        log::error!("Error sending message:{:?}", e);
-                    },
+                        let message =
+                            warp::ws::Message::binary(message::rx::MessagesMainMenu::NewLobbyId {
+                                lobby_id: lobby_id.as_bytes().clone(),
+                            });
+
+                        // if `send` is an error, then the connection is dropped.
+                        match self.websocket.send(message) {
+                            Ok(_) => {
+                                todo!()
+                            }
+                            Err(e) => {
+                                // TODO Close off the actor connection here
+                                log::error!("Error sending message:{:?}", e);
+                            }
+                        };
+                        DeserializerType::Lobby(lobby_actor.get_path().to_owned())
+                    }
                 };
-
-                Some(lobby_actor.get_path().to_owned())
+                self.comms = return_actor;
             }
-            message::MessagesTx::JoinLobby { username, lobby_id } => {
-                // ctx.system.get_actor()
-                // TODO Left off
-                None
+            DeserializerType::Lobby(lobby_path) => {
+                let deserialized_msg: message::tx::MessagesLobby =
+                    nanoserde::DeBin::deserialize_bin(&msg.0).expect("Cant parse message");
+                let mut lobby = ctx.system
+                        .get_actor::<LobbyActor>(&lobby_path)
+                        .await
+                        .unwrap();
+                let return_actor = match deserialized_msg {
+                    message::tx::MessagesLobby::Disconnect => {
+                        // Remove player from current lobby
+                        lobby.tell(Disconnect(self.connection_id)).unwrap();
+                        DeserializerType::MainMenu
+                    }
+                    message::tx::MessagesLobby::StartGame => {
+                        // Create a new game actor, transfer all players to there.
+                        todo!()
+                        // DeserializerType::Game()
+                    }
+                };
+                self.comms = return_actor;
             }
-
-            // Impossible...
-            message::MessagesTx::PlayerState(_) => None,
-            message::MessagesTx::Disconnect => None,
-        };
-        self.communication_actor = return_actor;
+            DeserializerType::Game(_) => todo!(),
+        }
     }
 }
 
@@ -134,6 +182,20 @@ impl LobbyActor {
             lobby_id,
             users: HashMap::new(),
         }
+    }
+}
+
+#[async_trait]
+impl Handler<ServerEvent, Connect> for LobbyActor {
+    async fn handle(&mut self, msg: Connect, ctx: &mut ActorContext<ServerEvent>) {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl Handler<ServerEvent, Disconnect> for LobbyActor {
+    async fn handle(&mut self, msg: Disconnect, ctx: &mut ActorContext<ServerEvent>) {
+        todo!()
     }
 }
 

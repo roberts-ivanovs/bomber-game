@@ -118,7 +118,7 @@ impl scene::Node for ApiController {
                                 Some(h)
                             });
                         }
-                        message::MessagesRx::JoinLobby {
+                        message::MessagesRx::SomeElseJoinedLobby {
                             username,
                             player_id,
                         } => {
@@ -126,7 +126,10 @@ impl scene::Node for ApiController {
                             let remote_player = scene::add_node(player);
                             remote_players.insert(player_id, remote_player);
                         }
-                        message::MessagesRx::Disconnect { player_id } => todo!(),
+                        message::MessagesRx::Disconnect { player_id: _ } => todo!(),
+                        message::MessagesRx::NewLobbyId { lobby_id: _ } => {},
+                        message::MessagesRx::Success => {},
+                        message::MessagesRx::Noop => {},
                     }
                 }
             }

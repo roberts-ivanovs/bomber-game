@@ -18,10 +18,17 @@ pub mod message {
     pub type PlayerID = Bytes;
 
     pub mod tx {
-        use nanoserde::{DeBin, SerBin};
-        use uuid::Bytes;
         use super::{PlayerState, Username};
+        use nanoserde::{DeBin, SerBin};
         use nserde_into_vec::IntoVecU8;
+        use uuid::Bytes;
+
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum TxOptions {
+            MessagesMainMenu(MessagesMainMenu),
+            MessagesLobby(MessagesLobby),
+            MessagesGame(MessagesGame),
+        }
 
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
         pub enum MessagesMainMenu {
@@ -41,18 +48,22 @@ pub mod message {
         }
     }
 
-
     pub mod rx {
-        use nanoserde::{DeBin, SerBin};
-        use uuid::Bytes;
         use super::{PlayerID, PlayerState, Username};
+        use nanoserde::{DeBin, SerBin};
         use nserde_into_vec::IntoVecU8;
+        use uuid::Bytes;
+        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
+        pub enum RxOptions {
+            MessagesMainMenu(MessagesMainMenu),
+            MessagesLobby(MessagesLobby),
+            MessagesGame(MessagesGame),
+        }
 
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
         pub enum MessagesMainMenu {
-            NewLobbyId {
-                lobby_id: Bytes,
-            },
+            NewLobbyId { lobby_id: Bytes },
+            SuccessfulJoin,
         }
 
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
@@ -73,11 +84,6 @@ pub mod message {
                 client: PlayerState,
                 player_id: PlayerID,
             },
-        }
-
-        #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
-        pub enum MessagesGameTx {
-            PlayerState(PlayerState),
         }
     }
     #[derive(Debug, Clone, SerBin, DeBin, PartialEq)]

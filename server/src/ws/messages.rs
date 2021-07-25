@@ -1,4 +1,4 @@
-use bomber_shared::messages;
+use bomber_shared::messages::{self, message::Username};
 use tiny_tokio_actor::{Actor, ActorContext, ActorPath, Handler, Message, SystemEvent};
 use tokio::sync::mpsc::{self, UnboundedSender};
 use async_trait::async_trait;
@@ -13,7 +13,7 @@ impl SystemEvent for ServerEvent {}
 
 
 #[derive(Clone, Debug)]
-pub struct Transmission(pub messages::message::MessagesTx);
+pub struct Transmission(pub Vec<u8>);
 
 
 impl Message for Transmission {
@@ -21,8 +21,16 @@ impl Message for Transmission {
 }
 
 #[derive(Clone, Debug)]
-pub struct Connect(pub Uuid, pub UnboundedSender<warp::ws::Message>);
+pub struct Connect(pub Uuid, pub UnboundedSender<warp::ws::Message>, pub Username);
 
 impl Message for Connect {
+    type Response = ();
+}
+
+
+#[derive(Clone, Debug)]
+pub struct Disconnect(pub Uuid);
+
+impl Message for Disconnect {
     type Response = ();
 }
