@@ -13,15 +13,14 @@ bitfield::bitfield! {
 pub mod message {
     use nanoserde::{DeBin, SerBin};
     use std::fmt::Debug;
-    use uuid::{Bytes, Uuid};
 
-    pub type PlayerID = Bytes;
+    pub type PlayerID = [u8; 16];
+    pub type LobbyID = [u8; 16];
 
     pub mod tx {
-        use super::{PlayerState, Username};
+        use super::{LobbyID, PlayerState, Username};
         use nanoserde::{DeBin, SerBin};
         use nserde_into_vec::IntoVecU8;
-        use uuid::Bytes;
 
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
         pub enum TxOptions {
@@ -32,7 +31,7 @@ pub mod message {
 
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
         pub enum MessagesMainMenu {
-            JoinLobby { username: Username, lobby_id: Bytes },
+            JoinLobby { username: Username, lobby_id: LobbyID },
             CreateLobby,
         }
 
@@ -49,10 +48,9 @@ pub mod message {
     }
 
     pub mod rx {
-        use super::{PlayerID, PlayerState, Username};
+        use super::{LobbyID, PlayerID, PlayerState, Username};
         use nanoserde::{DeBin, SerBin};
         use nserde_into_vec::IntoVecU8;
-        use uuid::Bytes;
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
         pub enum RxOptions {
             MessagesMainMenu(MessagesMainMenu),
@@ -62,7 +60,7 @@ pub mod message {
 
         #[derive(Debug, Clone, SerBin, DeBin, PartialEq, IntoVecU8)]
         pub enum MessagesMainMenu {
-            NewLobbyId { lobby_id: Bytes },
+            NewLobbyId { lobby_id: LobbyID },
             SuccessfulJoin,
         }
 

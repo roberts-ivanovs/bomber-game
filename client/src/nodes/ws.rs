@@ -4,6 +4,7 @@ use macroquad::prelude::scene;
 
 
 use quad_net::quad_socket::client::QuadSocket;
+use macroquad::window::next_frame;
 
 
 
@@ -13,7 +14,7 @@ pub struct WebSocketClient {
 
 impl WebSocketClient {
     pub async fn new() -> Self {
-        let socket = QuadSocket::connect("ws://127.0.0.1:3030").unwrap();
+        let socket = QuadSocket::connect("ws://127.0.0.1:9000/game").unwrap();
         #[cfg(target_arch = "wasm32")]
         {
             while socket.is_wasm_websocket_connected() == false {
@@ -27,7 +28,7 @@ impl WebSocketClient {
 
     pub fn send_player_state_bits(&mut self, player: PlayerStateBits<[u8; 4]>) {
         self.socket.send_bin(
-            &message::MessagesTx::PlayerState(
+            &message::tx::MessagesGame::PlayerState(
                 message::PlayerState(player.0),
             ),
         );

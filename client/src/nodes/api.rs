@@ -73,12 +73,6 @@ impl scene::Node for ApiController {
     {
         let mut comm = mem::take(&mut node.communication_mode);
         match &mut comm {
-            SocketCommMode::Lobby {
-                username,
-                remote_players,
-            } => {
-
-            },
             SocketCommMode::RealGame {
                 remote_players,
                 network_cache,
@@ -107,33 +101,21 @@ impl scene::Node for ApiController {
                     }
                 }
                 // Step 2: RX receive state
-                while let Some(msg) = socket.listen::<message::MessagesRx>() {
+                while let Some(msg) = socket.listen::<message::rx::MessagesGame>() {
                     match msg {
-                        message::MessagesRx::PlayerState { client, player_id } => {
-                            remote_players.get_mut(&player_id).and_then(|h| {
-                                let mut other = scene::get_node(*h);
-                                let state = PlayerStateBits(client.0);
-                                other.set_pos(vec2(state.x() as f32, state.y() as f32));
-                                other.set_dead(state.dead());
-                                Some(h)
-                            });
-                        }
-                        message::MessagesRx::SomeElseJoinedLobby {
-                            username,
-                            player_id,
-                        } => {
-                            let player = RemotePlayer::new(username.0, player_id);
-                            let remote_player = scene::add_node(player);
-                            remote_players.insert(player_id, remote_player);
-                        }
-                        message::MessagesRx::Disconnect { player_id: _ } => todo!(),
-                        message::MessagesRx::NewLobbyId { lobby_id: _ } => {},
-                        message::MessagesRx::Success => {},
-                        message::MessagesRx::Noop => {},
+                        message::rx::MessagesGame::PlayerState { client, player_id } => {
+                                remote_players.get_mut(&player_id).and_then(|h| {
+                                    let mut other = scene::get_node(*h);
+                                    let state = PlayerStateBits(client.0);
+                                    other.set_pos(vec2(state.x() as f32, state.y() as f32));
+                                    other.set_dead(state.dead());
+                                    Some(h)
+                                });
+                        },
                     }
                 }
             }
-            SocketCommMode::None => todo!(),
+            _ => {},
         }
         node.communication_mode = comm;
     }
