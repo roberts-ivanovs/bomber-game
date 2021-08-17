@@ -4,6 +4,9 @@ use macroquad_platformer::World as CollisionWorld;
 use macroquad_tiled as tiled;
 use rapier2d::prelude::*;
 
+use log::Level;
+use sapp_console_log::init_with_level;
+
 mod constants;
 mod gui;
 mod js_interop;
@@ -22,6 +25,8 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    init_with_level(Level::Debug).unwrap();
+
     // load textures
     let gui_resources = gui::GuiResources::new();
     storage::store(gui_resources);
